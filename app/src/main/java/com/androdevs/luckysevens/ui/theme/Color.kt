@@ -2,10 +2,11 @@ package com.androdevs.luckysevens.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Paleta de referencia de la especificación (sección 1)
+val BackgroundDark = Color(0xFF0B1033)  // fondo principal
+val SurfaceDark = Color(0xFF160D3D)     // fondo secundario (tarjetas, barras)
+val Gold = Color(0xFFFFD700)            // dorado: botones y detalles
+val AccentPurple = Color(0xFF7B2FF7)    // morado de acento
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Color de texto claro sobre fondos oscuros (no está en la especificación)
+val TextLight = Color(0xFFFFFFFF)
