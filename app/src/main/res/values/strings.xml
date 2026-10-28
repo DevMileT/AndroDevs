@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Lucky Sevens</string>
+
+    <string name="welcome_start_button">Comenzar</string>
+
+    <string name="menu_play">Jugar</string>
+    <string name="menu_history">Historial</string>
+    <string name="menu_stats">Estadísticas</string>
+    <string name="menu_settings">Ajustes</string>
+
+    <!-- Temporales: se borran cuando las pantallas tengan contenido real -->
+    <string name="placeholder_under_construction">Pantalla en construcción</string>
+    <string name="placeholder_back">Volver al Menú</string>
 </resources>

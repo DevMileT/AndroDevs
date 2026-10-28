@@ -32,6 +32,4 @@ keystore.properties
 .env.*
 secrets.properties
 
-# Informes y resultados de pruebas generados
-**/reports/
-**/outputs/
+.kotlin/
