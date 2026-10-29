@@ -10,5 +10,8 @@
 
     <!-- Temporales: se borran cuando las pantallas tengan contenido real -->
     <string name="placeholder_under_construction">Pantalla en construcción</string>
-    <string name="placeholder_back">Volver al Menú</string>
+
+
+    <string name="topbar_back_description">Volver al Menú</string>
+    <string name="topbar_balance">Saldo: %1$s</string>
 </resources>

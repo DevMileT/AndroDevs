@@ -18,6 +18,9 @@ import com.androdevs.luckysevens.ui.screens.SettingsScreen
 import com.androdevs.luckysevens.ui.screens.StatsScreen
 import com.androdevs.luckysevens.ui.screens.WelcomeScreen
 
+// TEMPORAL (Fase 4): saldo de prueba fijo. Se sustituye por el saldo real
+// del GameViewModel en las Fases 5 y 6.
+private const val TEST_BALANCE = 1000
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
@@ -45,9 +48,9 @@ fun MainNavigation() {
                 onSettingsClick = { navController.navigate(Routes.SETTINGS) }
             )
         }
-        composable(Routes.GAME) { GameScreen(onBackClick = goBackToMenu) }
-        composable(Routes.HISTORY) { HistoryScreen(onBackClick = goBackToMenu) }
-        composable(Routes.STATS) { StatsScreen(onBackClick = goBackToMenu) }
-        composable(Routes.SETTINGS) { SettingsScreen(onBackClick = goBackToMenu) }
+        composable(Routes.GAME) { GameScreen(balance = TEST_BALANCE, onBackClick = goBackToMenu) }
+        composable(Routes.HISTORY) { HistoryScreen(balance = TEST_BALANCE, onBackClick = goBackToMenu) }
+        composable(Routes.STATS) { StatsScreen(balance = TEST_BALANCE, onBackClick = goBackToMenu) }
+        composable(Routes.SETTINGS) { SettingsScreen(balance = TEST_BALANCE, onBackClick = goBackToMenu) }
     }
 }

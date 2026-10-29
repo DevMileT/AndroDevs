@@ -11,9 +11,10 @@ import androidx.compose.ui.res.stringResource
 import com.androdevs.luckysevens.R
 
 @Composable
-fun SettingsScreen(onBackClick: () -> Unit) {
+fun SettingsScreen(balance: Int, onBackClick: () -> Unit) {
     PlaceholderScreen(
-        title = stringResource(R.string.menu_settings),
+        title = stringResource(R.string.menu_play),
+        balance = balance,
         onBackClick = onBackClick
     )
 }

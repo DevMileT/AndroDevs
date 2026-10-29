@@ -11,9 +11,10 @@ import androidx.compose.ui.res.stringResource
 import com.androdevs.luckysevens.R
 
 @Composable
-fun HistoryScreen(onBackClick: () -> Unit) {
+fun HistoryScreen(balance: Int, onBackClick: () -> Unit) {
     PlaceholderScreen(
-        title = stringResource(R.string.menu_history),
+        title = stringResource(R.string.menu_play),
+        balance = balance,
         onBackClick = onBackClick
     )
 }
