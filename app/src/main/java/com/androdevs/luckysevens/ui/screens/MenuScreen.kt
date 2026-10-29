@@ -52,13 +52,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
 
+// Separación vertical entre los botones del Menú. En el mockup eran 33 px (≈ 44 dp);
+// reducida por decisión del equipo (desviación visual, D-10).
+private val MenuButtonSpacing = 28.dp
+
 @Composable
 fun MenuScreen(
     balance: Int,
+    canClaimBonus: Boolean,
     onPlayClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onStatsClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onClaimBonusClick: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
@@ -84,6 +90,7 @@ fun MenuScreen(
                     .padding(start = 8.dp)
             )
         }
+        Spacer(modifier = Modifier.height(25.dp))
         BalancePill(balance = balance)
         Spacer(modifier = Modifier.height(26.dp))
         MenuButton(
@@ -93,7 +100,7 @@ fun MenuScreen(
             borderColor = MenuPlayBorder,
             onClick = onPlayClick
         )
-        Spacer(modifier = Modifier.height(44.dp))
+        Spacer(modifier = Modifier.height(MenuButtonSpacing))
         MenuButton(
             text = stringResource(R.string.menu_history),
             iconRes = R.drawable.ic_list,
@@ -101,7 +108,7 @@ fun MenuScreen(
             borderColor = MenuHistoryBorder,
             onClick = onHistoryClick
         )
-        Spacer(modifier = Modifier.height(44.dp))
+        Spacer(modifier = Modifier.height(MenuButtonSpacing))
         MenuButton(
             text = stringResource(R.string.menu_stats),
             iconRes = R.drawable.ic_stats,
@@ -110,7 +117,7 @@ fun MenuScreen(
             onClick = onStatsClick,
             iconTint = Color.Unspecified
         )
-        Spacer(modifier = Modifier.height(44.dp))
+        Spacer(modifier = Modifier.height(MenuButtonSpacing))
         MenuButton(
             text = stringResource(R.string.menu_settings),
             iconRes = R.drawable.ic_settings,
@@ -118,6 +125,8 @@ fun MenuScreen(
             borderColor = MenuSettingsBorder,
             onClick = onSettingsClick
         )
+        Spacer(modifier = Modifier.height(MenuButtonSpacing))
+        BonusButton(canClaim = canClaimBonus, onClick = onClaimBonusClick)
     }
 }
 
@@ -251,5 +260,40 @@ private fun NavigationDropdown(
                 }
             )
         }
+    }
+}
+// Botón del bonus diario (RF-13): dorado y distinto de los de navegación.
+// Si ya se reclamó hoy queda atenuado y desactivado.
+@Composable
+private fun BonusButton(
+    canClaim: Boolean,
+    onClick: () -> Unit
+) {
+    val fill = MaterialTheme.colorScheme.primary
+    val content = MaterialTheme.colorScheme.onPrimary
+    Button(
+        onClick = onClick,
+        enabled = canClaim,
+        modifier = Modifier.fillMaxWidth(0.73f).height(60.dp),
+        shape = RoundedCornerShape(11.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = fill,
+            contentColor = content,
+            disabledContainerColor = fill.copy(alpha = 0.3f),
+            disabledContentColor = TextLight.copy(alpha = 0.7f)
+        ),
+        border = BorderStroke(
+            2.dp,
+            if (canClaim) ButtonAmber else ButtonAmber.copy(alpha = 0.3f)
+        ),
+        contentPadding = PaddingValues(horizontal = 20.dp)
+    ) {
+        Text(
+            text = stringResource(
+                if (canClaim) R.string.menu_bonus_available else R.string.menu_bonus_claimed
+            ),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

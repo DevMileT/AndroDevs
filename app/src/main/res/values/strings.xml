@@ -16,4 +16,6 @@
     <string name="welcome_tagline">¡Gira, gana y disfruta!</string>
     <string name="menu_balance_label">Saldo actual</string>
     <string name="menu_open_description">Abrir menú de navegación</string>
+    <string name="menu_bonus_available">Bonus diario +50</string>
+    <string name="menu_bonus_claimed">Bonus de hoy ya reclamado</string>
 </resources>
