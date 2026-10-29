@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.androdevs.luckysevens.R
 import java.text.NumberFormat
+import androidx.compose.foundation.layout.size
 
 // Barra superior reutilizable (D-09): flecha ← a la izquierda y saldo a la derecha.
 // No sabe de dónde viene el saldo ni adónde vuelve la flecha: los recibe por parámetro.
@@ -43,7 +44,8 @@ fun BalanceTopBar(
         IconButton(onClick = onBackClick, enabled = backEnabled) {
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_back),
-                contentDescription = stringResource(R.string.topbar_back_description)
+                contentDescription = stringResource(R.string.topbar_back_description),
+                modifier = Modifier.size(38.dp)
             )
         }
         Text(

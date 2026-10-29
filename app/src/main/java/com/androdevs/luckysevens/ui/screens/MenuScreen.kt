@@ -43,6 +43,14 @@ import com.androdevs.luckysevens.ui.theme.MenuStatsFill
 import com.androdevs.luckysevens.ui.theme.TextLight
 import java.text.NumberFormat
 import androidx.compose.foundation.layout.offset
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+
 
 @Composable
 fun MenuScreen(
@@ -56,14 +64,26 @@ fun MenuScreen(
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(34.dp))
-        Image(
-            painter = painterResource(R.drawable.logo_lucky_sevens),
-            contentDescription = stringResource(R.string.app_name),
-            modifier = Modifier.width(136.dp),
-            contentScale = ContentScale.FillWidth
-        )
-        Spacer(modifier = Modifier.height(51.dp))
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Image(
+                painter = painterResource(R.drawable.logo_lucky_sevens),
+                contentDescription = stringResource(R.string.app_name),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 34.dp)
+                    .width(136.dp),
+                contentScale = ContentScale.FillWidth
+            )
+            NavigationDropdown(
+                onPlayClick = onPlayClick,
+                onHistoryClick = onHistoryClick,
+                onStatsClick = onStatsClick,
+                onSettingsClick = onSettingsClick,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 8.dp)
+            )
+        }
         BalancePill(balance = balance)
         Spacer(modifier = Modifier.height(26.dp))
         MenuButton(
@@ -174,6 +194,61 @@ private fun MenuButton(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+// Icono de tres rayas con su desplegable de navegación (RF-02, CA-29).
+// Ofrece las mismas cuatro opciones que los botones; el bonus no entra porque no es navegación.
+@Composable
+private fun NavigationDropdown(
+    onPlayClick: () -> Unit,
+    onHistoryClick: () -> Unit,
+    onStatsClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                painter = painterResource(R.drawable.ic_menu),
+                contentDescription = stringResource(R.string.menu_open_description),
+                modifier = Modifier.size(40.dp)
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_play)) },
+                onClick = {
+                    expanded = false
+                    onPlayClick()
+                }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_history)) },
+                onClick = {
+                    expanded = false
+                    onHistoryClick()
+                }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_stats)) },
+                onClick = {
+                    expanded = false
+                    onStatsClick()
+                }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_settings)) },
+                onClick = {
+                    expanded = false
+                    onSettingsClick()
+                }
             )
         }
     }
