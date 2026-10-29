@@ -2,11 +2,18 @@ package com.androdevs.luckysevens.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Paleta de referencia de la especificación (sección 1)
-val BackgroundDark = Color(0xFF0B1033)  // fondo principal
-val SurfaceDark = Color(0xFF160D3D)     // fondo secundario (tarjetas, barras)
+// Paleta de referencia de la especificación (sección 1).
+// Desviación visual (D-10): el mockup del equipo usa #160D3D como fondo de todas las pantallas,
+// así que los dos fondos intercambian su papel respecto al texto de la especificación.
+val BackgroundDark = Color(0xFF160D3D )  // fondo de todas las pantallas
+val SurfaceDark = Color(0xFF0B1033)     // tono más oscuro para tarjetas y paneles (provisional)
 val Gold = Color(0xFFFFD700)            // dorado: botones y detalles
 val AccentPurple = Color(0xFF7B2FF7)    // morado de acento
 
 // Color de texto claro sobre fondos oscuros (no está en la especificación)
 val TextLight = Color(0xFFFFFFFF)
+// Medidos en el mockup de la Bienvenida (captura del equipo): botón ámbar con texto marrón.
+val ButtonAmber = Color(0xFFEBA81C)
+val ButtonAmberText = Color(0xFF622222)
+// Color crema de la frase de la Bienvenida, medido en el mockup.
+val TaglineCream = Color(0xFFF9EDAC)
