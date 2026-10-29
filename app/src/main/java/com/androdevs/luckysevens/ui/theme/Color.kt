@@ -17,3 +17,13 @@ val ButtonAmber = Color(0xFFEBA81C)
 val ButtonAmberText = Color(0xFF622222)
 // Color crema de la frase de la Bienvenida, medido en el mockup.
 val TaglineCream = Color(0xFFF9EDAC)
+
+// Botones del Menú, medidos en el mockup (relleno y borde de cada uno).
+val MenuPlayFill = Color(0xFF6A1B9A)
+val MenuPlayBorder = Color(0xFF9C27B0)
+val MenuHistoryFill = Color(0xFF0F52BA)
+val MenuHistoryBorder = Color(0xFF028CE9)
+val MenuStatsFill = Color(0xFF008F39)
+val MenuStatsBorder = Color(0xFF00A864)
+val MenuSettingsFill = Color(0xFFED760E)
+val MenuSettingsBorder = Color(0xFFDE8613)

@@ -42,6 +42,7 @@ fun MainNavigation() {
         }
         composable(Routes.MENU) {
             MenuScreen(
+                balance = TEST_BALANCE,
                 onPlayClick = { navController.navigate(Routes.GAME) },
                 onHistoryClick = { navController.navigate(Routes.HISTORY) },
                 onStatsClick = { navController.navigate(Routes.STATS) },
