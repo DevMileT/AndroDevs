@@ -27,3 +27,7 @@ val MenuStatsFill = Color(0xFF008F39)
 val MenuStatsBorder = Color(0xFF00A864)
 val MenuSettingsFill = Color(0xFFED760E)
 val MenuSettingsBorder = Color(0xFFDE8613)
+
+// Píldora del saldo de la barra superior, medida en el mockup de Juego.
+val BalanceBadgeFill = Color(0xFF1D3B77)
+val BalanceBadgeBorder = Color(0xFF1C4B9C)

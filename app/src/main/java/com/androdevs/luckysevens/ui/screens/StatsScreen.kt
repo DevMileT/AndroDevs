@@ -14,7 +14,7 @@ import com.androdevs.luckysevens.R
 @Composable
 fun StatsScreen(balance: Int, onBackClick: () -> Unit) {
     PlaceholderScreen(
-        title = stringResource(R.string.menu_play),
+        title = stringResource(R.string.menu_stats),
         balance = balance,
         onBackClick = onBackClick
     )
