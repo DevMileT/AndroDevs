@@ -49,3 +49,9 @@ val HistoryCardBorder = Color(0xFF043575)
 val OutcomeWinFill = Color(0xFF008937)
 val OutcomeLossFill = Color(0xFFC12727)
 val OutcomeDrawFill = Color(0xFF0E4CAC)
+
+// Balance neto de Estadísticas (P-07): verde si es positivo (medido en el mockup)
+// y rojo claro si es negativo (elegido por el mentor: no hay mockup; el rojo de las
+// etiquetas es demasiado oscuro para leerse como texto sobre el fondo de la tarjeta).
+val StatPositive = Color(0xFF00BB77)
+val StatNegative = Color(0xFFFF6B6B)

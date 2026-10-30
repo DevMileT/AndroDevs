@@ -40,4 +40,13 @@
     <string name="history_filter_draws">Empates</string>
     <string name="history_filter_losses">Derrotas</string>
     <string name="history_empty">No hay partidas para mostrar</string>
+
+    <string name="stats_total">Total de partidas</string>
+    <string name="stats_wins">Victorias</string>
+    <string name="stats_draws">Empates</string>
+    <string name="stats_losses">Derrotas</string>
+    <string name="stats_net_balance">Balance neto</string>
+    <string name="stats_record_title">Récord personal</string>
+    <string name="stats_record_subtitle">Saldo máximo alcanzado</string>
+    <string name="stats_record_value">%1$s monedas</string>
 </resources>
