@@ -28,4 +28,16 @@
     <string name="game_prize_other">Otra combinación</string>
     <string name="game_prize_three_sevens">Tres sietes</string>
     <string name="game_prize_three_bells">Tres campanas</string>
+    <string name="history_filter_description">Filtrar partidas</string>
+
+    <string name="history_outcome_win">Victoria</string>
+    <string name="history_outcome_draw">Empate</string>
+    <string name="history_outcome_loss">Derrota</string>
+    <string name="history_row_summary">Apuesta %1$s · Premio %2$s · Saldo %3$s</string>
+
+    <string name="history_filter_all">Todas</string>
+    <string name="history_filter_wins">Victorias</string>
+    <string name="history_filter_draws">Empates</string>
+    <string name="history_filter_losses">Derrotas</string>
+    <string name="history_empty">No hay partidas para mostrar</string>
 </resources>

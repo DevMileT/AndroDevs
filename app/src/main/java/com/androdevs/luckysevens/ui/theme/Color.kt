@@ -42,3 +42,10 @@ val SpinGreenBottom = Color(0xFF067E38)
 // Tarjeta de premios de Juego, medida en el mockup.
 val PrizeCardFill = Color(0xFF3A2060)
 val PrizeCardBorder = Color(0xFF6B5BBF)
+
+// Tarjetas del Historial y etiquetas de resultado, medidas en el mockup.
+val HistoryCardFill = Color(0xFF051650)
+val HistoryCardBorder = Color(0xFF043575)
+val OutcomeWinFill = Color(0xFF008937)
+val OutcomeLossFill = Color(0xFFC12727)
+val OutcomeDrawFill = Color(0xFF0E4CAC)

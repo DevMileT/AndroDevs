@@ -63,7 +63,7 @@ fun MainNavigation() {
             )
         }
         composable(Routes.GAME) { GameScreen(balance = TEST_BALANCE, onBackClick = goBackToMenu) }
-        composable(Routes.HISTORY) { HistoryScreen(balance = TEST_BALANCE, onBackClick = goBackToMenu) }
+        composable(Routes.HISTORY) { HistoryScreen(onBackClick = goBackToMenu) }
         composable(Routes.STATS) { StatsScreen(balance = TEST_BALANCE, onBackClick = goBackToMenu) }
         composable(Routes.SETTINGS) { SettingsScreen(balance = TEST_BALANCE, onBackClick = goBackToMenu) }
     }
