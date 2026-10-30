@@ -8,9 +8,6 @@
     <string name="menu_stats">Estadísticas</string>
     <string name="menu_settings">Ajustes</string>
 
-    <!-- Temporales: se borran cuando las pantallas tengan contenido real -->
-    <string name="placeholder_under_construction">Pantalla en construcción</string>
-
     <string name="topbar_back_description">Volver al Menú</string>
     <string name="topbar_balance">Saldo: %1$s</string>
     <string name="welcome_tagline">¡Gira, gana y disfruta!</string>
@@ -49,4 +46,12 @@
     <string name="stats_record_title">Récord personal</string>
     <string name="stats_record_subtitle">Saldo máximo alcanzado</string>
     <string name="stats_record_value">%1$s monedas</string>
+
+    <string name="settings_about_title">Acerca de</string>
+    <string name="settings_about_version">Versión %1$s</string>
+    <string name="settings_about_project">Proyecto académico del grupo AndroDevs</string>
+    <string name="settings_virtual_title">Monedas virtuales</string>
+    <string name="settings_virtual_body">Lucky Sevens usa exclusivamente monedas virtuales. No hay dinero real, compras ni apuestas económicas.</string>
+    <string name="settings_bonus_title">Bonus diario</string>
+    <string name="settings_bonus_body">El bonus diario depende de la fecha del dispositivo. Un cambio manual de la fecha o de la zona horaria puede permitir reclamarlo más de una vez al día.</string>
 </resources>
