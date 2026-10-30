@@ -31,3 +31,10 @@ val MenuSettingsBorder = Color(0xFFDE8613)
 // Píldora del saldo de la barra superior, medida en el mockup de Juego.
 val BalanceBadgeFill = Color(0xFF1D3B77)
 val BalanceBadgeBorder = Color(0xFF1C4B9C)
+
+// Panel de apuesta y botón Girar, medidos en el mockup de Juego.
+val BetPanelFill = Color(0xFF080B31)
+val BetPanelBorder = Color(0xFFA7681E)
+val BetStepButtonFill = Color(0xFF192575)
+val SpinGreenTop = Color(0xFF2AD44A)
+val SpinGreenBottom = Color(0xFF067E38)
