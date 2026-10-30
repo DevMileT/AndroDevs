@@ -20,4 +20,12 @@
     <string name="menu_bonus_claimed">Bonus de hoy ya reclamado</string>
     <string name="game_bet_label">Apuesta</string>
     <string name="game_spin_button">Girar</string>
+    <string name="game_prizes_title">Tabla de premios</string>
+    <string name="game_prize_multiplier">X %1$d</string>
+    <string name="game_prize_three_same">Tres iguales</string>
+    <string name="game_prize_two_same">Dos iguales</string>
+    <string name="game_prize_one_cherry">Una cereza</string>
+    <string name="game_prize_other">Otra combinación</string>
+    <string name="game_prize_three_sevens">Tres sietes</string>
+    <string name="game_prize_three_bells">Tres campanas</string>
 </resources>

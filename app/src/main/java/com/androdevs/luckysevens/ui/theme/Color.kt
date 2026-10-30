@@ -38,3 +38,7 @@ val BetPanelBorder = Color(0xFFA7681E)
 val BetStepButtonFill = Color(0xFF192575)
 val SpinGreenTop = Color(0xFF2AD44A)
 val SpinGreenBottom = Color(0xFF067E38)
+
+// Tarjeta de premios de Juego, medida en el mockup.
+val PrizeCardFill = Color(0xFF3A2060)
+val PrizeCardBorder = Color(0xFF6B5BBF)
