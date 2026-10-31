@@ -55,6 +55,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 import com.androdevs.luckysevens.ui.theme.ButtonAmber
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.androdevs.luckysevens.ui.theme.ButtonAmberText
+import com.androdevs.luckysevens.ui.theme.StatPositive
+import com.androdevs.luckysevens.ui.util.formatNumber
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.sp
 
 // Posición de las tres ventanas dentro de reel_frame.png (612 × 408 px), medida en la imagen.
 // Si se cambia la imagen del marco, solo hay que actualizar estos valores.
@@ -124,10 +136,43 @@ private val PRIZE_LINES = listOf(
 // TEMPORAL: en la Fase 5 pasará a GameUiState y lo calculará el GameViewModel.
 private enum class GameWarning { NO_FUNDS_BONUS_AVAILABLE, NO_FUNDS_BONUS_CLAIMED }
 
+// TEMPORAL (Fase 4): resultado de prueba para ver el panel. En la Fase 5 lo calculará
+// GameEngine y llegará en GameUiState (lastResult).
+private enum class ResultOutcome { WIN, DRAW, LOSS }
+
+private data class TestResult(
+    val outcome: ResultOutcome,
+    val symbols: List<Int>,
+    val bet: Int,
+    val multiplier: Int
+)
+
+// Rota entre victoria (x5), empate (x1) y derrota (x0) en cada pulsación de Girar.
+private fun testResultFor(index: Int, bet: Int): TestResult = when (index % 3) {
+    0 -> TestResult(
+        ResultOutcome.WIN,
+        listOf(R.drawable.symbol_bell, R.drawable.symbol_bell, R.drawable.symbol_bell),
+        bet, 5
+    )
+    1 -> TestResult(
+        ResultOutcome.DRAW,
+        listOf(R.drawable.symbol_cherry, R.drawable.symbol_orange, R.drawable.symbol_grape),
+        bet, 1
+    )
+    else -> TestResult(
+        ResultOutcome.LOSS,
+        listOf(R.drawable.symbol_orange, R.drawable.symbol_bell, R.drawable.symbol_seven),
+        bet, 0
+    )
+}
+
 @Composable
 fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
     // TEMPORAL: apuesta de prueba para ver funcionar los botones − y +.
     var bet by remember { mutableStateOf(20) }
+    // TEMPORAL: resultado de prueba que se muestra en el panel al pulsar Girar.
+    var result by remember { mutableStateOf<TestResult?>(null) }
+    var spinCount by remember { mutableStateOf(0) }
 
     // Estado derivado: se calcula a partir del saldo y del bonus, no se guarda (RF-04).
     val maxBet = minOf(TEST_MAX_BET, balance / TEST_BET_STEP * TEST_BET_STEP)
@@ -140,50 +185,68 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
         else -> GameWarning.NO_FUNDS_BONUS_CLAIMED
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            BalanceTopBar(balance = balance, onBackClick = onBackClick)
-            Image(
-                painter = painterResource(R.drawable.logo_lucky_sevens),
-                contentDescription = stringResource(R.string.app_name),
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 42.dp)
-                    .width(109.dp),
-                contentScale = ContentScale.FillWidth
+    // Con el panel de resultado visible, Atrás equivale a Continuar (D-05, CA-30).
+    BackHandler(enabled = result != null) { result = null }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                BalanceTopBar(balance = balance, onBackClick = onBackClick)
+                Image(
+                    painter = painterResource(R.drawable.logo_lucky_sevens),
+                    contentDescription = stringResource(R.string.app_name),
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 42.dp)
+                        .width(109.dp),
+                    contentScale = ContentScale.FillWidth
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            // Símbolos fijos de prueba; el resultado real llega con la lógica del juego.
+            ReelsView(
+                symbols = listOf(
+                    R.drawable.symbol_cherry,
+                    R.drawable.symbol_seven,
+                    R.drawable.symbol_bell
+                ),
+                modifier = Modifier.fillMaxWidth(0.82f)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            BetPanel(
+                bet = shownBet,
+                selectorEnabled = canPlay,
+                canDecrease = canPlay && shownBet > TEST_MIN_BET,
+                canIncrease = canPlay && shownBet < maxBet,
+                canSpin = canPlay,
+                warning = warning,
+                onDecreaseClick = { bet = (shownBet - TEST_BET_STEP).coerceAtLeast(TEST_MIN_BET) },
+                onIncreaseClick = { bet = (shownBet + TEST_BET_STEP).coerceAtMost(maxBet) },
+                onSpinClick = {
+                    // TEMPORAL: muestra un resultado de prueba; no cambia el saldo.
+                    result = testResultFor(spinCount, shownBet)
+                    spinCount += 1
+                },
+                modifier = Modifier.fillMaxWidth(0.82f)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            PrizesCard(modifier = Modifier.fillMaxWidth(0.82f))
+        }
+
+        // El panel va después del contenido, así que se dibuja encima de él.
+        result?.let { shown ->
+            ResultOverlay(
+                result = shown,
+                previousBalance = balance,
+                onContinueClick = { result = null }
             )
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        // Símbolos fijos de prueba; el resultado real llega con la lógica del juego.
-        ReelsView(
-            symbols = listOf(
-                R.drawable.symbol_cherry,
-                R.drawable.symbol_seven,
-                R.drawable.symbol_bell
-            ),
-            modifier = Modifier.fillMaxWidth(0.82f)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        BetPanel(
-            bet = shownBet,
-            selectorEnabled = canPlay,
-            canDecrease = canPlay && shownBet > TEST_MIN_BET,
-            canIncrease = canPlay && shownBet < maxBet,
-            canSpin = canPlay,
-            warning = warning,
-            onDecreaseClick = { bet = (shownBet - TEST_BET_STEP).coerceAtLeast(TEST_MIN_BET) },
-            onIncreaseClick = { bet = (shownBet + TEST_BET_STEP).coerceAtMost(maxBet) },
-            onSpinClick = { /* TEMPORAL: Girar no hace nada hasta las Fases 5 y 6 */ },
-            modifier = Modifier.fillMaxWidth(0.82f)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        PrizesCard(modifier = Modifier.fillMaxWidth(0.82f))
     }
 }
 
@@ -411,5 +474,198 @@ private fun PrizeRow(line: PrizeLine) {
             fontWeight = FontWeight.Bold,
             color = TextLight
         )
+    }
+}
+
+
+// Panel de resultado sobre Juego (RF-06, CA-30): fondo oscurecido, banner con el texto por
+// código, combinación, línea de premio (solo si hay premio), tabla de cuatro líneas y Continuar.
+@Composable
+private fun ResultOverlay(
+    result: TestResult,
+    previousBalance: Int,
+    onContinueClick: () -> Unit
+) {
+    val prize = result.bet * result.multiplier
+    val finalBalance = previousBalance - result.bet + prize
+
+    val iconRes = when (result.outcome) {
+        ResultOutcome.WIN -> R.drawable.ic_trophy
+        ResultOutcome.DRAW -> R.drawable.ic_handshake
+        ResultOutcome.LOSS -> R.drawable.ic_defeat
+    }
+    val bannerTextRes = when (result.outcome) {
+        ResultOutcome.WIN -> R.string.result_win
+        ResultOutcome.DRAW -> R.string.result_draw
+        ResultOutcome.LOSS -> R.string.result_loss
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.65f))
+            // Absorbe los toques para que nada del fondo responda con el panel abierto.
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {}
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.88f)
+                .background(BetPanelFill, RoundedCornerShape(16.dp))
+                .border(3.dp, BetPanelBorder, RoundedCornerShape(16.dp))
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(iconRes),
+                contentDescription = null,
+                modifier = Modifier.height(56.dp)
+            )
+            // Banner único sin texto (D-06): el texto se pone encima, sobre la cinta.
+            Box(contentAlignment = Alignment.Center) {
+                Image(
+                    painter = painterResource(R.drawable.banner_result),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentScale = ContentScale.FillWidth
+                )
+                CurvedBannerText(
+                    text = stringResource(bannerTextRes),
+                    modifier = Modifier.matchParentSize()
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row {
+                result.symbols.forEach { symbolRes ->
+                    Image(
+                        painter = painterResource(symbolRes),
+                        contentDescription = null,
+                        modifier = Modifier.size(44.dp)
+                    )
+                }
+            }
+            if (result.multiplier > 0) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(
+                        R.string.result_prize_line,
+                        formatNumber(prize),
+                        result.multiplier
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextLight
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+            ResultRow(
+                label = stringResource(R.string.result_previous_balance),
+                value = formatNumber(previousBalance)
+            )
+            ResultRow(
+                label = stringResource(R.string.result_bet),
+                value = "−" + formatNumber(result.bet)
+            )
+            ResultRow(
+                label = stringResource(R.string.result_prize),
+                value = if (prize > 0) "+" + formatNumber(prize) else formatNumber(prize),
+                valueColor = if (prize > 0) StatPositive else TextLight
+            )
+            ResultRow(
+                label = stringResource(R.string.result_final_balance),
+                value = formatNumber(finalBalance),
+                valueColor = ButtonAmber,
+                highlighted = true
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onContinueClick,
+                modifier = Modifier.fillMaxWidth(0.7f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ButtonAmber,
+                    contentColor = ButtonAmberText
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.result_continue),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+// Una línea de la tabla del panel: etiqueta a la izquierda y valor a la derecha.
+@Composable
+private fun ResultRow(
+    label: String,
+    value: String,
+    valueColor: Color = TextLight,
+    highlighted: Boolean = false
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = if (highlighted) FontWeight.Bold else FontWeight.Normal,
+            color = TextLight,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = valueColor
+        )
+    }
+}
+
+// Medidas de la cinta de banner_result.png (707×353 px), como fracción del tamaño de la imagen.
+// La línea central de la cinta es una parábola con el vértice en el centro; se reproduce con una
+// curva de Bézier cuadrática con los mismos extremos y el mismo vértice.
+private const val RIBBON_START_X = 130f / 707f
+private const val RIBBON_END_X = 577f / 707f
+private const val RIBBON_EDGE_Y = 197.5f / 353f
+private const val RIBBON_CONTROL_Y = 106.5f / 353f
+
+// Texto que sigue el arco de la cinta del banner. Excepción a D-06 («sin Canvas»), solo para esto.
+// El texto no se parte en líneas: si no cabe en la cinta, se reduce hasta que quepa.
+@Composable
+private fun CurvedBannerText(text: String, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.semantics { contentDescription = text }) {
+        val path = android.graphics.Path().apply {
+            moveTo(size.width * RIBBON_START_X, size.height * RIBBON_EDGE_Y)
+            quadTo(
+                size.width * 0.5f, size.height * RIBBON_CONTROL_Y,
+                size.width * RIBBON_END_X, size.height * RIBBON_EDGE_Y
+            )
+        }
+        val pathLength = android.graphics.PathMeasure(path, false).length
+        val paint = android.graphics.Paint().apply {
+            isAntiAlias = true
+            color = android.graphics.Color.WHITE
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            textSize = 22.sp.toPx()
+            setShadowLayer(4f, 0f, 3f, android.graphics.Color.argb(160, 0, 0, 0))
+        }
+        // Si el texto no cabe en la cinta, se reduce hasta que quepa.
+        val maxWidth = pathLength * 0.9f
+        val textWidth = paint.measureText(text)
+        if (textWidth > maxWidth) paint.textSize = paint.textSize * maxWidth / textWidth
+        // Centrado a lo largo de la curva. El texto se apoya en ella por la base, así que se
+        // baja un poco (vOffset) para que su centro visual quede sobre la línea central.
+        val hOffset = (pathLength - paint.measureText(text)) / 2f
+        val vOffset = paint.textSize * 0.35f
+        drawIntoCanvas { canvas ->
+            canvas.nativeCanvas.drawTextOnPath(text, path, hOffset, vOffset, paint)
+        }
     }
 }

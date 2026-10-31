@@ -57,4 +57,14 @@
     <string name="game_warning_no_funds_bonus_available">Saldo insuficiente. Reclama tu bonus en el Menú</string>
     <string name="game_warning_no_funds_bonus_claimed">No puedes jugar hasta mañana</string>
 
+    <string name="result_win">¡Has ganado!</string>
+    <string name="result_draw">¡Recuperas tu apuesta!</string>
+    <string name="result_loss">¡Inténtalo de nuevo!</string>
+    <string name="result_prize_line">Premio: %1$s monedas (%2$d × apuesta)</string>
+    <string name="result_previous_balance">Saldo anterior</string>
+    <string name="result_bet">Apuesta</string>
+    <string name="result_prize">Premio</string>
+    <string name="result_final_balance">Saldo final</string>
+    <string name="result_continue">Continuar</string>
+
 </resources>
