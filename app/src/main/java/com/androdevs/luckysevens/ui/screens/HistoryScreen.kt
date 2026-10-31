@@ -45,7 +45,7 @@ import com.androdevs.luckysevens.ui.theme.OutcomeDrawFill
 import com.androdevs.luckysevens.ui.theme.OutcomeLossFill
 import com.androdevs.luckysevens.ui.theme.OutcomeWinFill
 import com.androdevs.luckysevens.ui.theme.TextLight
-import java.text.NumberFormat
+import com.androdevs.luckysevens.ui.util.formatNumber
 
 // TEMPORAL (Fase 4): datos de prueba. En la Fase 6 el historial real llegará de SQLite
 // (SpinRecord: fecha en milisegundos y resultado como SpinOutcome del dominio).
@@ -181,7 +181,7 @@ private fun FilterMenu(selected: HistoryFilter, onSelected: (HistoryFilter) -> U
 // Tarjeta de una partida: fecha, combinación, etiqueta de resultado y resumen económico.
 @Composable
 private fun SpinCard(spin: TestSpin, modifier: Modifier = Modifier) {
-    val format = NumberFormat.getIntegerInstance()
+
     Column(
         modifier = modifier
             .background(HistoryCardFill, RoundedCornerShape(16.dp))
@@ -213,9 +213,9 @@ private fun SpinCard(spin: TestSpin, modifier: Modifier = Modifier) {
         Text(
             text = stringResource(
                 R.string.history_row_summary,
-                format.format(spin.bet),
-                format.format(spin.prize),
-                format.format(spin.balanceAfter)
+                formatNumber(spin.bet),
+                formatNumber(spin.prize),
+                formatNumber(spin.balanceAfter)
             ),
             style = MaterialTheme.typography.bodySmall,
             color = TextLight.copy(alpha = 0.75f)

@@ -41,7 +41,7 @@ import com.androdevs.luckysevens.ui.theme.MenuSettingsFill
 import com.androdevs.luckysevens.ui.theme.MenuStatsBorder
 import com.androdevs.luckysevens.ui.theme.MenuStatsFill
 import com.androdevs.luckysevens.ui.theme.TextLight
-import java.text.NumberFormat
+import com.androdevs.luckysevens.ui.util.formatNumber
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -151,7 +151,7 @@ private fun BalancePill(balance: Int) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = NumberFormat.getIntegerInstance().format(balance),
+                text = formatNumber(balance),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = ButtonAmber

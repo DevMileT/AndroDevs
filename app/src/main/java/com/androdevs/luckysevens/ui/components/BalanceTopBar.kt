@@ -35,8 +35,7 @@ import com.androdevs.luckysevens.R
 import com.androdevs.luckysevens.ui.theme.BalanceBadgeBorder
 import com.androdevs.luckysevens.ui.theme.BalanceBadgeFill
 import com.androdevs.luckysevens.ui.theme.TextLight
-import java.text.NumberFormat
-
+import com.androdevs.luckysevens.ui.util.formatNumber
 // Barra superior reutilizable (D-09): flecha ← a la izquierda y saldo a la derecha.
 // No sabe de dónde viene el saldo ni adónde vuelve la flecha: los recibe por parámetro.
 @Composable
@@ -68,7 +67,7 @@ fun BalanceTopBar(
 // TalkBack lee «Saldo: …» aunque en pantalla solo se vea el número.
 @Composable
 private fun BalanceBadge(balance: Int, modifier: Modifier = Modifier) {
-    val formatted = NumberFormat.getIntegerInstance().format(balance)
+    val formatted = formatNumber(balance)
     val description = stringResource(R.string.topbar_balance, formatted)
     Row(
         modifier = modifier

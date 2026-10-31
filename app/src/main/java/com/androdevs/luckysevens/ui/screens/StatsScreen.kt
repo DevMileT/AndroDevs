@@ -40,7 +40,7 @@ import com.androdevs.luckysevens.ui.theme.HistoryCardFill
 import com.androdevs.luckysevens.ui.theme.StatNegative
 import com.androdevs.luckysevens.ui.theme.StatPositive
 import com.androdevs.luckysevens.ui.theme.TextLight
-import java.text.NumberFormat
+import com.androdevs.luckysevens.ui.util.formatNumber
 
 // TEMPORAL (Fase 4): estadísticas de prueba, las del mockup. En las Fases 6 y 7 se calcularán
 // con COUNT y SUM sobre el historial (D-04) y el récord se leerá de la tabla player.
@@ -53,8 +53,6 @@ private const val TEST_RECORD = 1250
 
 @Composable
 fun StatsScreen(onBackClick: () -> Unit) {
-    val format = NumberFormat.getIntegerInstance()
-
     Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
         TitleTopBar(title = stringResource(R.string.menu_stats), onBackClick = onBackClick)
         Column(
@@ -71,13 +69,13 @@ fun StatsScreen(onBackClick: () -> Unit) {
                 StatCard(
                     iconRes = R.drawable.ic_gamepad2,
                     label = stringResource(R.string.stats_total),
-                    value = format.format(TEST_TOTAL),
+                    value = formatNumber(TEST_TOTAL),
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
                     iconRes = R.drawable.ic_trophy,
                     label = stringResource(R.string.stats_wins),
-                    value = format.format(TEST_WINS),
+                    value = formatNumber(TEST_WINS),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -88,13 +86,13 @@ fun StatsScreen(onBackClick: () -> Unit) {
                 StatCard(
                     iconRes = R.drawable.ic_handshake,
                     label = stringResource(R.string.stats_draws),
-                    value = format.format(TEST_DRAWS),
+                    value = formatNumber(TEST_DRAWS),
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
                     iconRes = R.drawable.ic_coin_stack,
                     label = stringResource(R.string.stats_net_balance),
-                    value = netBalanceText(TEST_NET_BALANCE, format),
+                    value = netBalanceText(TEST_NET_BALANCE),
                     valueColor = netBalanceColor(TEST_NET_BALANCE),
                     modifier = Modifier.weight(1f)
                 )
@@ -106,20 +104,20 @@ fun StatsScreen(onBackClick: () -> Unit) {
                 StatCard(
                     iconRes = R.drawable.ic_defeat,
                     label = stringResource(R.string.stats_losses),
-                    value = format.format(TEST_LOSSES),
+                    value = formatNumber(TEST_LOSSES),
                     modifier = Modifier.weight(1f)
                 )
                 // Hueco vacío a la derecha, como en el mockup.
                 Spacer(modifier = Modifier.weight(1f))
             }
-            RecordCard(record = TEST_RECORD, format = format)
+            RecordCard(record = TEST_RECORD)
         }
     }
 }
 
 // Texto del balance neto: con «+» si es positivo (P-07).
-private fun netBalanceText(net: Int, format: NumberFormat): String =
-    if (net > 0) "+" + format.format(net) else format.format(net)
+private fun netBalanceText(net: Int): String =
+    if (net > 0) "+" + formatNumber(net) else formatNumber(net)
 
 // Verde si es positivo, rojo si es negativo y blanco si es cero (P-07).
 private fun netBalanceColor(net: Int): Color = when {
@@ -178,7 +176,7 @@ private fun StatCard(
 
 // Tarjeta ancha del récord personal: corona a la izquierda y tres líneas de texto.
 @Composable
-private fun RecordCard(record: Int, format: NumberFormat, modifier: Modifier = Modifier) {
+private fun RecordCard(record: Int, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -211,7 +209,7 @@ private fun RecordCard(record: Int, format: NumberFormat, modifier: Modifier = M
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = stringResource(R.string.stats_record_value, format.format(record)),
+                text = stringResource(R.string.stats_record_value, formatNumber(record)),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = ButtonAmber
