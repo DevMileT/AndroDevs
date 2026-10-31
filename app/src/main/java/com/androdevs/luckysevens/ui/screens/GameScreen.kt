@@ -67,6 +67,17 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // Posición de las tres ventanas dentro de reel_frame.png (612 × 408 px), medida en la imagen.
 // Si se cambia la imagen del marco, solo hay que actualizar estos valores.
@@ -78,16 +89,36 @@ private const val FRAME_VISIBLE_TOP = 42f
 private const val FRAME_VISIBLE_HEIGHT = 300f
 private const val FRAME_CROP_BIAS =
     2f * FRAME_VISIBLE_TOP / (FRAME_HEIGHT - FRAME_VISIBLE_HEIGHT) - 1f
-private const val WINDOW_TOP = 108f
-private const val WINDOW_HEIGHT = 135f
-private val WINDOW_LEFT = floatArrayOf(88f, 242f, 395f)
-private val WINDOW_WIDTH = floatArrayOf(129f, 126f, 127f)
+private const val WINDOW_TOP = 76f
+private const val WINDOW_HEIGHT = 228f
+private val WINDOW_LEFT = floatArrayOf(89f, 243f, 395f)
+private val WINDOW_WIDTH = floatArrayOf(127f, 125f, 126f)
 
 // TEMPORAL (Fase 4): límites de la apuesta. Los reales vivirán en GameConstants (RNF-07)
 // y la apuesta en el GameViewModel (Fases 5 y 6).
 private const val TEST_MIN_BET = 10
 private const val TEST_MAX_BET = 100
 private const val TEST_BET_STEP = 10
+
+// Los seis símbolos posibles de un rodillo (sección 2).
+private val ALL_SYMBOLS = listOf(
+    R.drawable.symbol_cherry,
+    R.drawable.symbol_lemon,
+    R.drawable.symbol_grape,
+    R.drawable.symbol_orange,
+    R.drawable.symbol_bell,
+    R.drawable.symbol_seven
+)
+
+// Celdas que recorre cada rodillo durante el giro y su duración. El primero para antes y el
+// último después, así los rodillos se detienen de forma progresiva (RF-05).
+private val REEL_CELLS = intArrayOf(10, 16, 22)
+private val REEL_DURATION_MS = intArrayOf(1200, 1700, 2200)
+
+// Franja de un rodillo: el símbolo con el que estaba, símbolos al azar y, al final, el
+// resultado. La animación la desliza hasta que el resultado queda a la vista.
+private fun buildStrip(from: Int, result: Int, cells: Int): List<Int> =
+    listOf(from) + List(cells - 1) { ALL_SYMBOLS.random() } + result
 
 // Tamaño de los dibujos de la tabla de premios. La columna de dibujos mide lo que cuatro
 // de ellos (la fila más ancha), para que todos los textos empiecen en la misma columna.
@@ -170,9 +201,22 @@ private fun testResultFor(index: Int, bet: Int): TestResult = when (index % 3) {
 fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
     // TEMPORAL: apuesta de prueba para ver funcionar los botones − y +.
     var bet by remember { mutableStateOf(20) }
-    // TEMPORAL: resultado de prueba que se muestra en el panel al pulsar Girar.
+    // TEMPORAL: resultado de prueba que se muestra en el panel cuando termina el giro.
     var result by remember { mutableStateOf<TestResult?>(null) }
     var spinCount by remember { mutableStateOf(0) }
+
+    // TEMPORAL: estado del giro. En la Fase 5 vivirá en GameUiState (isSpinning) y el resultado
+    // lo calculará GameEngine; la animación seguirá siendo de la interfaz.
+    var spinning by remember { mutableStateOf(false) }
+    var pending by remember { mutableStateOf<TestResult?>(null) }
+    var restSymbols by remember {
+        mutableStateOf(
+            listOf(R.drawable.symbol_cherry, R.drawable.symbol_seven, R.drawable.symbol_bell)
+        )
+    }
+    var strips by remember { mutableStateOf<List<List<Int>>>(emptyList()) }
+    // Un Animatable por rodillo: guarda cuántas celdas se ha desplazado su franja.
+    val offsets = remember { List(3) { Animatable(0f) } }
 
     // Estado derivado: se calcula a partir del saldo y del bonus, no se guarda (RF-04).
     val maxBet = minOf(TEST_MAX_BET, balance / TEST_BET_STEP * TEST_BET_STEP)
@@ -185,8 +229,38 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
         else -> GameWarning.NO_FUNDS_BONUS_CLAIMED
     }
 
+    // Corrutina del giro: se lanza cuando `spinning` pasa a true. Las tres animaciones corren a
+    // la vez (un launch cada una) y coroutineScope espera a que acaben las tres.
+    LaunchedEffect(spinning) {
+        if (!spinning) return@LaunchedEffect
+        val finalResult = pending ?: return@LaunchedEffect
+        coroutineScope {
+            offsets.forEachIndexed { index, offset ->
+                launch {
+                    offset.animateTo(
+                        targetValue = REEL_CELLS[index].toFloat(),
+                        animationSpec = tween(
+                            durationMillis = REEL_DURATION_MS[index],
+                            easing = LinearOutSlowInEasing
+                        )
+                    )
+                }
+            }
+        }
+        delay(300) // pausa breve para ver la combinación antes del panel
+        // Fin del giro: cada rodillo vuelve a un solo símbolo, el resultado.
+        restSymbols = finalResult.symbols
+        strips = emptyList()
+        offsets.forEach { it.snapTo(0f) }
+        result = finalResult
+        spinning = false
+    }
+
     // Con el panel de resultado visible, Atrás equivale a Continuar (D-05, CA-30).
     BackHandler(enabled = result != null) { result = null }
+    // Girando: el botón Atrás del sistema no hace nada (RF-07, CA-28). El giro ya está guardado
+    // (D-02), así que no se pierde nada por no poder salir hasta que acabe la animación.
+    BackHandler(enabled = spinning) { }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -197,7 +271,8 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                BalanceTopBar(balance = balance, onBackClick = onBackClick)
+                BalanceTopBar(balance = balance, onBackClick = onBackClick,
+                    backEnabled = !spinning)
                 Image(
                     painter = painterResource(R.drawable.logo_lucky_sevens),
                     contentDescription = stringResource(R.string.app_name),
@@ -209,29 +284,34 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
-            // Símbolos fijos de prueba; el resultado real llega con la lógica del juego.
             ReelsView(
-                symbols = listOf(
-                    R.drawable.symbol_cherry,
-                    R.drawable.symbol_seven,
-                    R.drawable.symbol_bell
-                ),
+                // En reposo, un solo símbolo por rodillo; girando, la franja completa.
+                strips = if (strips.isEmpty()) restSymbols.map { listOf(it) } else strips,
+                offsetOf = { index -> offsets[index].value },
                 modifier = Modifier.fillMaxWidth(0.82f)
             )
             Spacer(modifier = Modifier.height(12.dp))
             BetPanel(
                 bet = shownBet,
-                selectorEnabled = canPlay,
-                canDecrease = canPlay && shownBet > TEST_MIN_BET,
-                canIncrease = canPlay && shownBet < maxBet,
-                canSpin = canPlay,
+                selectorEnabled = canPlay && !spinning,
+                canDecrease = canPlay && !spinning && shownBet > TEST_MIN_BET,
+                canIncrease = canPlay && !spinning && shownBet < maxBet,
+                canSpin = canPlay && !spinning,
                 warning = warning,
                 onDecreaseClick = { bet = (shownBet - TEST_BET_STEP).coerceAtLeast(TEST_MIN_BET) },
                 onIncreaseClick = { bet = (shownBet + TEST_BET_STEP).coerceAtMost(maxBet) },
                 onSpinClick = {
-                    // TEMPORAL: muestra un resultado de prueba; no cambia el saldo.
-                    result = testResultFor(spinCount, shownBet)
-                    spinCount += 1
+                    // Nunca dos giros a la vez, ni siquiera con dos toques muy rápidos (CA-10).
+                    if (!spinning) {
+                        // TEMPORAL: resultado de prueba, calculado antes de animar (D-02).
+                        val newResult = testResultFor(spinCount, shownBet)
+                        spinCount += 1
+                        strips = newResult.symbols.mapIndexed { index, final ->
+                            buildStrip(restSymbols[index], final, REEL_CELLS[index])
+                        }
+                        pending = newResult
+                        spinning = true
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(0.82f)
             )
@@ -250,11 +330,14 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
     }
 }
 
-// Marco de los rodillos con un símbolo dentro de cada ventana.
-// Marco de los rodillos con un símbolo dentro de cada ventana.
-// Solo se muestra la parte visible del marco (sin sus márgenes transparentes).
+// Marco de los rodillos con una ventana por rodillo. Solo se muestra la parte visible del marco
+// (sin sus márgenes transparentes). Cada ventana recibe su franja de símbolos y cuánto se desplaza.
 @Composable
-private fun ReelsView(symbols: List<Int>, modifier: Modifier = Modifier) {
+private fun ReelsView(
+    strips: List<List<Int>>,
+    offsetOf: (Int) -> Float,
+    modifier: Modifier = Modifier
+) {
     BoxWithConstraints(modifier = modifier.aspectRatio(FRAME_WIDTH / FRAME_VISIBLE_HEIGHT)) {
         Image(
             painter = painterResource(R.drawable.reel_frame),
@@ -263,10 +346,10 @@ private fun ReelsView(symbols: List<Int>, modifier: Modifier = Modifier) {
             contentScale = ContentScale.Crop,
             alignment = BiasAlignment(horizontalBias = 0f, verticalBias = FRAME_CROP_BIAS)
         )
-        symbols.forEachIndexed { index, symbolRes ->
-            Image(
-                painter = painterResource(symbolRes),
-                contentDescription = null,
+        strips.forEachIndexed { index, strip ->
+            ReelWindow(
+                symbols = strip,
+                offsetCells = { offsetOf(index) },
                 modifier = Modifier
                     .offset(
                         x = maxWidth * (WINDOW_LEFT[index] / FRAME_WIDTH),
@@ -276,8 +359,41 @@ private fun ReelsView(symbols: List<Int>, modifier: Modifier = Modifier) {
                         width = maxWidth * (WINDOW_WIDTH[index] / FRAME_WIDTH),
                         height = maxHeight * (WINDOW_HEIGHT / FRAME_VISIBLE_HEIGHT)
                     )
-                    .padding(8.dp)
             )
+        }
+    }
+}
+
+// Una ventana: muestra una franja vertical de símbolos y solo deja ver lo que cabe dentro
+// (clipToBounds). El desplazamiento se mide en celdas: 1 celda = el alto de la ventana.
+@Composable
+private fun ReelWindow(
+    symbols: List<Int>,
+    offsetCells: () -> Float,
+    modifier: Modifier = Modifier
+) {
+    BoxWithConstraints(modifier = modifier.clipToBounds()) {
+        val cellHeight = maxHeight
+        Column(
+            modifier = Modifier
+                // Sin este modificador, la columna no podría ser más alta que la ventana.
+                .wrapContentHeight(align = Alignment.Top, unbounded = true)
+                .offset {
+                    // Se lee dentro de offset { }: se aplica al colocar, sin recomponer.
+                    val cells = offsetCells().coerceIn(0f, (symbols.size - 1).toFloat())
+                    IntOffset(0, -(cells * cellHeight.toPx()).roundToInt())
+                }
+        ) {
+            symbols.forEach { symbolRes ->
+                Image(
+                    painter = painterResource(symbolRes),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(cellHeight)
+                        .padding(8.dp)
+                )
+            }
         }
     }
 }
