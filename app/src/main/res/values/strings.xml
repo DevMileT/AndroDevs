@@ -54,4 +54,7 @@
     <string name="settings_virtual_body">Lucky Sevens usa exclusivamente monedas virtuales. No hay dinero real, compras ni apuestas económicas.</string>
     <string name="settings_bonus_title">Bonus diario</string>
     <string name="settings_bonus_body">El bonus diario depende de la fecha del dispositivo. Un cambio manual de la fecha o de la zona horaria puede permitir reclamarlo más de una vez al día.</string>
+    <string name="game_warning_no_funds_bonus_available">Saldo insuficiente. Reclama tu bonus en el Menú</string>
+    <string name="game_warning_no_funds_bonus_claimed">No puedes jugar hasta mañana</string>
+
 </resources>

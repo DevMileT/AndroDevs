@@ -50,6 +50,11 @@ import com.androdevs.luckysevens.ui.theme.TextLight
 import com.androdevs.luckysevens.ui.theme.PrizeCardBorder
 import com.androdevs.luckysevens.ui.theme.PrizeCardFill
 import androidx.compose.ui.BiasAlignment
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.style.TextAlign
+import com.androdevs.luckysevens.ui.theme.ButtonAmber
 
 // Posición de las tres ventanas dentro de reel_frame.png (612 × 408 px), medida en la imagen.
 // Si se cambia la imagen del marco, solo hay que actualizar estos valores.
@@ -115,13 +120,31 @@ private val PRIZE_LINES = listOf(
     PrizeLine(emptyList(), R.string.game_prize_other, 0)
 )
 
+// Avisos de saldo insuficiente (D-09). Se muestran debajo del botón Girar.
+// TEMPORAL: en la Fase 5 pasará a GameUiState y lo calculará el GameViewModel.
+private enum class GameWarning { NO_FUNDS_BONUS_AVAILABLE, NO_FUNDS_BONUS_CLAIMED }
+
 @Composable
-fun GameScreen(balance: Int, onBackClick: () -> Unit) {
+fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
     // TEMPORAL: apuesta de prueba para ver funcionar los botones − y +.
     var bet by remember { mutableStateOf(20) }
 
+    // Estado derivado: se calcula a partir del saldo y del bonus, no se guarda (RF-04).
+    val maxBet = minOf(TEST_MAX_BET, balance / TEST_BET_STEP * TEST_BET_STEP)
+    val canPlay = maxBet >= TEST_MIN_BET
+    // Si el saldo baja de la apuesta elegida, la apuesta se ajusta al máximo permitido.
+    val shownBet = if (canPlay) bet.coerceAtMost(maxBet) else TEST_MIN_BET
+    val warning = when {
+        canPlay -> null
+        canClaimBonus -> GameWarning.NO_FUNDS_BONUS_AVAILABLE
+        else -> GameWarning.NO_FUNDS_BONUS_CLAIMED
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize().systemBarsPadding(),
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -148,11 +171,14 @@ fun GameScreen(balance: Int, onBackClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         BetPanel(
-            bet = bet,
-            canDecrease = bet > TEST_MIN_BET,
-            canIncrease = bet < TEST_MAX_BET,
-            onDecreaseClick = { bet = (bet - TEST_BET_STEP).coerceAtLeast(TEST_MIN_BET) },
-            onIncreaseClick = { bet = (bet + TEST_BET_STEP).coerceAtMost(TEST_MAX_BET) },
+            bet = shownBet,
+            selectorEnabled = canPlay,
+            canDecrease = canPlay && shownBet > TEST_MIN_BET,
+            canIncrease = canPlay && shownBet < maxBet,
+            canSpin = canPlay,
+            warning = warning,
+            onDecreaseClick = { bet = (shownBet - TEST_BET_STEP).coerceAtLeast(TEST_MIN_BET) },
+            onIncreaseClick = { bet = (shownBet + TEST_BET_STEP).coerceAtMost(maxBet) },
             onSpinClick = { /* TEMPORAL: Girar no hace nada hasta las Fases 5 y 6 */ },
             modifier = Modifier.fillMaxWidth(0.82f)
         )
@@ -193,18 +219,22 @@ private fun ReelsView(symbols: List<Int>, modifier: Modifier = Modifier) {
     }
 }
 
-// Panel de apuesta: etiqueta, selector − / + y botón Girar.
-// No guarda estado: recibe la apuesta y avisa de lo que pulsa el jugador.
+// Panel de apuesta: etiqueta, selector − / +, botón Girar y, si hace falta, el aviso.
+// No guarda estado: recibe la apuesta y los permisos y avisa de lo que pulsa el jugador.
 @Composable
 private fun BetPanel(
     bet: Int,
+    selectorEnabled: Boolean,
     canDecrease: Boolean,
     canIncrease: Boolean,
+    canSpin: Boolean,
+    warning: GameWarning?,
     onDecreaseClick: () -> Unit,
     onIncreaseClick: () -> Unit,
     onSpinClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val selectorAlpha = if (selectorEnabled) 1f else 0.4f
     Column(
         modifier = modifier
             .background(BetPanelFill, RoundedCornerShape(14.dp))
@@ -215,7 +245,7 @@ private fun BetPanel(
         Text(
             text = stringResource(R.string.game_bet_label),
             style = MaterialTheme.typography.bodyMedium,
-            color = TextLight
+            color = TextLight.copy(alpha = selectorAlpha)
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row(
@@ -228,13 +258,37 @@ private fun BetPanel(
                 text = bet.toString(),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = TextLight
+                color = TextLight.copy(alpha = selectorAlpha)
             )
             BetStepButton(text = "+", enabled = canIncrease, onClick = onIncreaseClick)
         }
         Spacer(modifier = Modifier.height(16.dp))
-        SpinButton(onClick = onSpinClick)
+        SpinButton(enabled = canSpin, onClick = onSpinClick)
+        if (warning != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            WarningBox(warning = warning)
+        }
     }
+}
+
+// Recuadro de aviso bajo el botón Girar (diseño propio: sin mockup).
+@Composable
+private fun WarningBox(warning: GameWarning) {
+    val textRes = when (warning) {
+        GameWarning.NO_FUNDS_BONUS_AVAILABLE -> R.string.game_warning_no_funds_bonus_available
+        GameWarning.NO_FUNDS_BONUS_CLAIMED -> R.string.game_warning_no_funds_bonus_claimed
+    }
+    Text(
+        text = stringResource(textRes),
+        style = MaterialTheme.typography.bodyMedium,
+        color = TextLight,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(ButtonAmber.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+            .border(1.5.dp, ButtonAmber.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    )
 }
 
 // Botón − o +; se atenúa cuando se llega al límite.
@@ -258,13 +312,16 @@ private fun BetStepButton(text: String, enabled: Boolean, onClick: () -> Unit) {
 }
 
 // Botón Girar con degradado verde. El botón es transparente y el degradado va detrás.
+// Desactivado se atenúa entero (alpha) porque el degradado no depende de los colores del botón.
 @Composable
-private fun SpinButton(onClick: () -> Unit) {
+private fun SpinButton(enabled: Boolean, onClick: () -> Unit) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
             .height(57.dp)
+            .alpha(if (enabled) 1f else 0.4f)
             .background(
                 Brush.verticalGradient(listOf(SpinGreenTop, SpinGreenBottom)),
                 RoundedCornerShape(percent = 50)
@@ -272,7 +329,9 @@ private fun SpinButton(onClick: () -> Unit) {
         shape = RoundedCornerShape(percent = 50),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
-            contentColor = TextLight
+            contentColor = TextLight,
+            disabledContainerColor = Color.Transparent,
+            disabledContentColor = TextLight
         )
     ) {
         Icon(
@@ -287,7 +346,6 @@ private fun SpinButton(onClick: () -> Unit) {
             fontWeight = FontWeight.Bold
         )
     }
-
 }
 
 // Tarjeta con la tabla de premios completa, en seis líneas agrupadas (D-08).

@@ -22,16 +22,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
-// TEMPORAL (Fase 4): saldo de prueba fijo. Se sustituye por el saldo real
-// del GameViewModel en las Fases 5 y 6.
+// TEMPORAL (Fase 4): valores iniciales de prueba. Para ver los avisos de Juego, cámbialos y
+// vuelve a ejecutar la app (y restáuralos después):
+//   TEST_BALANCE = 0 y TEST_BONUS_AVAILABLE = true  -> «Saldo insuficiente. Reclama tu bonus…»
+//   TEST_BALANCE = 0 y TEST_BONUS_AVAILABLE = false -> «No puedes jugar hasta mañana»
 private const val TEST_BALANCE = 1000
+private const val TEST_BONUS_AVAILABLE = true
+
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
     // TEMPORAL (Fase 4): estado de prueba del saldo y del bonus. Se sustituye por el
     // GameViewModel y la base de datos en las Fases 5 y 6.
     var testBalance by remember { mutableStateOf(TEST_BALANCE) }
-    var testBonusAvailable by remember { mutableStateOf(true) }
+    var testBonusAvailable by remember { mutableStateOf(TEST_BONUS_AVAILABLE) }
+
+
 
     // Vuelve al Menú sin sacarlo nunca de la pila (evita problemas con pulsaciones dobles).
     val goBackToMenu: () -> Unit = {
@@ -62,7 +68,13 @@ fun MainNavigation() {
                 }
             )
         }
-        composable(Routes.GAME) { GameScreen(balance = testBalance, onBackClick = goBackToMenu) }
+        composable(Routes.GAME) {
+            GameScreen(
+                balance = testBalance,
+                canClaimBonus = testBonusAvailable,
+                onBackClick = goBackToMenu
+            )
+        }
         composable(Routes.HISTORY) { HistoryScreen(onBackClick = goBackToMenu) }
         composable(Routes.STATS) { StatsScreen(onBackClick = goBackToMenu) }
         composable(Routes.SETTINGS) { SettingsScreen(onBackClick = goBackToMenu) }
