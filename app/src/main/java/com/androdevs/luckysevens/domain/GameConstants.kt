@@ -17,4 +17,5 @@ object GameConstants {
     const val MAX_BET = 100          // Apuesta máxima
     const val BET_STEP = 10          // Las apuestas suben de 10 en 10
     const val DAILY_BONUS = 50       // Monedas del bonus diario
+    const val REEL_COUNT = 3         // Número de rodillos de la máquina
 }
