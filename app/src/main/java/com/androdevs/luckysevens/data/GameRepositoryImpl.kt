@@ -9,7 +9,9 @@ import com.androdevs.luckysevens.domain.SpinResult
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.time.LocalDate
-
+import com.androdevs.luckysevens.domain.DateProvider
+import com.androdevs.luckysevens.domain.GameConstants
+import com.androdevs.luckysevens.domain.SystemDateProvider
 /**
  * Implementación de GameRepository con SQLite (D-03). Todo el trabajo de base de datos se
  * ejecuta en un hilo de fondo (subscribeOn), nunca en el principal (RNF-03).
@@ -18,7 +20,8 @@ import java.time.LocalDate
 class GameRepositoryImpl(
     private val helper: GameDatabaseHelper,
     private val gameEngine: GameEngine,
-    private val nowMillis: () -> Long = System::currentTimeMillis
+    private val nowMillis: () -> Long = System::currentTimeMillis,
+    private val dateProvider: DateProvider = SystemDateProvider()
 ) : GameRepository {
 
     override fun getPlayerState(): Single<PlayerState> =
@@ -30,7 +33,8 @@ class GameRepositoryImpl(
             .subscribeOn(Schedulers.io())
 
     override fun claimBonus(): Single<Boolean> =
-        TODO("Bloque B: UPDATE condicionado del bonus")
+        Single.fromCallable { claimBonusNow() }
+            .subscribeOn(Schedulers.io())
 
     /**
      * Resuelve un giro y guarda saldo, récord e historial en UNA transacción (D-02, RNF-04):
@@ -90,6 +94,30 @@ class GameRepositoryImpl(
                 // La fecha se guarda como texto AAAA-MM-DD; NULL significa "nunca reclamado".
                 lastBonusDate = if (cursor.isNull(2)) null else LocalDate.parse(cursor.getString(2))
             )
+        }
+    }
+
+    /**
+     * Reclama el bonus con un único UPDATE condicionado (D-04, CA-16): comprobar y escribir
+     * ocurren a la vez, así que dos llamadas seguidas no pueden sumar dos veces.
+     * Devuelve true si se concedió ahora (1 fila modificada) y false si ya estaba reclamado hoy.
+     */
+    private fun claimBonusNow(): Boolean {
+        val today = dateProvider.today().toString() // formato ISO AAAA-MM-DD (D-04)
+        val sql = "UPDATE ${GameDatabaseHelper.TABLE_PLAYER} SET " +
+                "${GameDatabaseHelper.COL_BALANCE} = ${GameDatabaseHelper.COL_BALANCE} + ?, " +
+                "${GameDatabaseHelper.COL_RECORD} = " +
+                "MAX(${GameDatabaseHelper.COL_RECORD}, ${GameDatabaseHelper.COL_BALANCE} + ?), " +
+                "${GameDatabaseHelper.COL_LAST_BONUS_DATE} = ? " +
+                "WHERE ${GameDatabaseHelper.COL_ID} = 1 AND " +
+                "(${GameDatabaseHelper.COL_LAST_BONUS_DATE} IS NULL " +
+                "OR ${GameDatabaseHelper.COL_LAST_BONUS_DATE} <> ?)"
+        return helper.writableDatabase.compileStatement(sql).use { statement ->
+            statement.bindLong(1, GameConstants.DAILY_BONUS.toLong())
+            statement.bindLong(2, GameConstants.DAILY_BONUS.toLong())
+            statement.bindString(3, today)
+            statement.bindString(4, today)
+            statement.executeUpdateDelete() == 1
         }
     }
 }

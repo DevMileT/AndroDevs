@@ -17,7 +17,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.LocalDate
-
+import com.androdevs.luckysevens.domain.BonusRules
+import com.androdevs.luckysevens.domain.DateProvider
+import io.reactivex.rxjava3.core.Single
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 /**
  * Pruebas de GameRepositoryImpl. Se ejecutan en el móvil con una base EN MEMORIA
  * (name = null): no tocan la base real de la app y desaparecen al cerrarse.
@@ -56,7 +60,17 @@ class GameRepositoryImplTest {
         helper.writableDatabase.rawQuery("SELECT COUNT(*) FROM spin_history", null).use { cursor ->
             cursor.moveToFirst()
             cursor.getInt(0)
+
+
         }
+
+    /** Calendario falso: la fecha de "hoy" se puede cambiar a voluntad. */
+    private class FakeDateProvider(var date: LocalDate) : DateProvider {
+        override fun today(): LocalDate = date
+    }
+
+    private fun repositoryWithDate(dateProvider: DateProvider) =
+        GameRepositoryImpl(helper, GameEngine(RandomReelGenerator()), dateProvider = dateProvider)
 
     @Test
     fun getPlayerState_onNewDatabase_returnsInitialState() {
@@ -167,5 +181,103 @@ class GameRepositoryImplTest {
         val state = repository.getPlayerState().blockingGet()
         assertEquals(1000, state.balance)
         assertEquals(1000, state.record)
+    }
+
+    @Test
+    fun claimBonus_firstTime_addsBonusSavesDateAndReturnsTrue() {
+        // CA-14: sin reclamación previa, sube 50 y se guarda la fecha de hoy.
+        val today = LocalDate.of(2026, 11, 2)
+        val repo = repositoryWithDate(FakeDateProvider(today))
+
+        assertTrue(repo.claimBonus().blockingGet())
+
+        val state = repo.getPlayerState().blockingGet()
+        assertEquals(1050, state.balance)
+        assertEquals(1050, state.record)
+        assertEquals(today, state.lastBonusDate)
+    }
+
+    @Test
+    fun claimBonus_twiceSameDay_addsOnlyOnce() {
+        // CA-16 y CA-17: la segunda vez el mismo día no suma nada.
+        val repo = repositoryWithDate(FakeDateProvider(LocalDate.of(2026, 11, 2)))
+
+        assertTrue(repo.claimBonus().blockingGet())
+        assertFalse(repo.claimBonus().blockingGet())
+
+        assertEquals(1050, repo.getPlayerState().blockingGet().balance)
+    }
+
+    @Test
+    fun claimBonus_simultaneousCalls_addsOnlyOnce() {
+        // Dos llamadas a la vez (cada una en su hilo de fondo): solo una puede ganar.
+        val repo = repositoryWithDate(FakeDateProvider(LocalDate.of(2026, 11, 2)))
+
+        val results = Single.zip(repo.claimBonus(), repo.claimBonus()) { a, b -> listOf(a, b) }
+            .blockingGet()
+
+        assertEquals(1, results.count { it })
+        assertEquals(1050, repo.getPlayerState().blockingGet().balance)
+    }
+
+    @Test
+    fun claimBonus_onLaterDays_addsOnlyOneBonusEach() {
+        // CA-18: al día siguiente se puede reclamar; tras varios días sin abrir, solo 50.
+        val dates = FakeDateProvider(LocalDate.of(2026, 11, 2))
+        val repo = repositoryWithDate(dates)
+
+        assertTrue(repo.claimBonus().blockingGet())
+        dates.date = LocalDate.of(2026, 11, 3)
+        assertTrue(repo.claimBonus().blockingGet())
+        dates.date = LocalDate.of(2026, 11, 8) // cinco días sin abrir la app
+        assertTrue(repo.claimBonus().blockingGet())
+
+        assertEquals(1150, repo.getPlayerState().blockingGet().balance)
+    }
+
+    @Test
+    fun claimBonus_neverLowersRecord() {
+        // CA-24: el récord solo sube. Saldo 500 y récord 1200: tras el bonus, 550 y 1200.
+        helper.writableDatabase.execSQL("UPDATE player SET balance = 500, record = 1200 WHERE id = 1")
+        val repo = repositoryWithDate(FakeDateProvider(LocalDate.of(2026, 11, 2)))
+
+        repo.claimBonus().blockingGet()
+
+        val state = repo.getPlayerState().blockingGet()
+        assertEquals(550, state.balance)
+        assertEquals(1200, state.record)
+    }
+
+    @Test
+    fun claimBonus_raisesRecordWhenBalanceExceedsIt() {
+        // Saldo 1180 y récord 1200: el bonus deja el saldo en 1230 y el récord sube a 1230.
+        helper.writableDatabase.execSQL("UPDATE player SET balance = 1180, record = 1200 WHERE id = 1")
+        val repo = repositoryWithDate(FakeDateProvider(LocalDate.of(2026, 11, 2)))
+
+        repo.claimBonus().blockingGet()
+
+        val state = repo.getPlayerState().blockingGet()
+        assertEquals(1230, state.balance)
+        assertEquals(1230, state.record)
+    }
+
+    @Test
+    fun claimBonus_agreesWithBonusRules() {
+        // La regla de Kotlin (BonusRules) y la del SQL deben decir lo mismo cada día,
+        // incluido un reloj que vuelve atrás ("distinta de hoy", D-12).
+        val dates = FakeDateProvider(LocalDate.of(2026, 11, 2))
+        val repo = repositoryWithDate(dates)
+        val rules = BonusRules(dates)
+        val days = listOf(
+            LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 2),
+            LocalDate.of(2026, 11, 3), LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 1)
+        )
+
+        for (day in days) {
+            dates.date = day
+            val expected = rules.canClaim(repo.getPlayerState().blockingGet().lastBonusDate)
+            val actual = repo.claimBonus().blockingGet()
+            assertEquals("Día $day", expected, actual)
+        }
     }
 }
