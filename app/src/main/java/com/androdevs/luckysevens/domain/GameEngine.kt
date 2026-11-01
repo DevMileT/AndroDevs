@@ -8,10 +8,40 @@ package com.androdevs.luckysevens.domain
  */
 
 /**
- * Árbitro del juego. En el paso 5.4c se añadirá spin(); por ahora solo las reglas de la apuesta,
- * que están en un companion object para poder usarlas sin crear un GameEngine.
+ * Árbitro del juego: resuelve un giro con las reglas de la especificación.
+ * Recibe el generador de símbolos desde fuera, así las pruebas pueden darle uno con resultados
+ * conocidos (RNF-06). No guarda nada ni tiene memoria: cada llamada a spin() es independiente.
  */
-class GameEngine {
+class GameEngine(private val reelGenerator: ReelGenerator) {
+
+    /**
+     * Resuelve un giro: saldo final = saldo anterior - apuesta + premio (sección 2.4).
+     * Lanza IllegalArgumentException si la apuesta no es válida (decisión 2 de D-12).
+     * No modifica el estado: devuelve el resultado, y quien lo guarde calculará el nuevo
+     * PlayerState con state.withBalance(result.balanceAfter).
+     */
+    fun spin(state: PlayerState, bet: Int): SpinResult {
+        require(isValidBet(state.balance, bet)) {
+            "Apuesta inválida: $bet con saldo ${state.balance}"
+        }
+
+        val symbols = reelGenerator.nextSymbols()
+        val prize = PayoutTable.multiplierFor(symbols) * bet
+
+        val outcome = when {
+            prize > bet -> SpinOutcome.WIN
+            prize == bet -> SpinOutcome.DRAW
+            else -> SpinOutcome.LOSS
+        }
+
+        return SpinResult(
+            bet = bet,
+            symbols = symbols,
+            prize = prize,
+            outcome = outcome,
+            balanceAfter = state.balance - bet + prize
+        )
+    }
 
     companion object {
 
