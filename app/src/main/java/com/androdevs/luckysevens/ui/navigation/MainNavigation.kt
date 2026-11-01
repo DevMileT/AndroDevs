@@ -23,6 +23,7 @@ import com.androdevs.luckysevens.ui.screens.StatsScreen
 import com.androdevs.luckysevens.ui.screens.WelcomeScreen
 import com.androdevs.luckysevens.ui.state.GameError
 import com.androdevs.luckysevens.ui.state.GameViewModel
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun MainNavigation(viewModel: GameViewModel) {
@@ -33,10 +34,13 @@ fun MainNavigation(viewModel: GameViewModel) {
 
     // Aviso breve si algo falla al leer o guardar (sin mockup: diseño provisional).
     val context = LocalContext.current
+    // El texto se resuelve aquí, en la composición, con stringResource: así sigue al idioma del móvil.
+    val errorText = uiState.error?.let { stringResource(errorTextRes(it)) }
     LaunchedEffect(uiState.error) {
-        val error = uiState.error ?: return@LaunchedEffect
-        Toast.makeText(context, context.getString(errorTextRes(error)), Toast.LENGTH_LONG).show()
-        viewModel.onErrorShown()
+        if (errorText != null) {
+            Toast.makeText(context, errorText, Toast.LENGTH_LONG).show()
+            viewModel.onErrorShown()
+        }
     }
 
     // Vuelve al Menú sin sacarlo nunca de la pila (evita problemas con pulsaciones dobles).
@@ -67,9 +71,13 @@ fun MainNavigation(viewModel: GameViewModel) {
         }
         composable(Routes.GAME) {
             GameScreen(
-                balance = uiState.balance,
-                canClaimBonus = uiState.canClaimBonus,
-                onBackClick = goBackToMenu
+                uiState = uiState,
+                onBackClick = goBackToMenu,
+                onDecreaseBet = viewModel::onDecreaseBet,
+                onIncreaseBet = viewModel::onIncreaseBet,
+                onSpinClick = viewModel::onSpinClicked,
+                onSpinAnimationFinished = viewModel::onSpinAnimationFinished,
+                onResultDismissed = viewModel::onResultDismissed
             )
         }
         composable(Routes.HISTORY) { HistoryScreen(onBackClick = goBackToMenu) }

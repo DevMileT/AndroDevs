@@ -78,6 +78,12 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.androdevs.luckysevens.domain.PayoutTable
+import com.androdevs.luckysevens.domain.SpinOutcome
+import com.androdevs.luckysevens.domain.SpinResult
+import com.androdevs.luckysevens.ui.state.GameUiState
+import com.androdevs.luckysevens.ui.state.GameWarning
+import com.androdevs.luckysevens.ui.util.drawableRes
 
 // Posición de las tres ventanas dentro de reel_frame.png (612 × 408 px), medida en la imagen.
 // Si se cambia la imagen del marco, solo hay que actualizar estos valores.
@@ -94,11 +100,7 @@ private const val WINDOW_HEIGHT = 228f
 private val WINDOW_LEFT = floatArrayOf(89f, 243f, 395f)
 private val WINDOW_WIDTH = floatArrayOf(127f, 125f, 126f)
 
-// TEMPORAL (Fase 4): límites de la apuesta. Los reales vivirán en GameConstants (RNF-07)
-// y la apuesta en el GameViewModel (Fases 5 y 6).
-private const val TEST_MIN_BET = 10
-private const val TEST_MAX_BET = 100
-private const val TEST_BET_STEP = 10
+
 
 // Los seis símbolos posibles de un rodillo (sección 2).
 private val ALL_SYMBOLS = listOf(
@@ -131,18 +133,18 @@ private data class PrizeLine(
     val multiplier: Int
 )
 
-// TEMPORAL (Fase 4): las seis líneas de D-08 con los multiplicadores escritos a mano.
-// En la Fase 5 se leerán de PayoutTable (RNF-07) para que no se desincronicen de la lógica.
+// Las seis líneas de D-08. Los multiplicadores se leen de PayoutTable, así la tarjeta no puede
+// desincronizarse de la lógica (RNF-07, D-12).
 private val PRIZE_LINES = listOf(
     PrizeLine(
         listOf(R.drawable.symbol_seven, R.drawable.symbol_seven, R.drawable.symbol_seven),
         R.string.game_prize_three_sevens,
-        10
+        PayoutTable.THREE_SEVENS
     ),
     PrizeLine(
         listOf(R.drawable.symbol_bell, R.drawable.symbol_bell, R.drawable.symbol_bell),
         R.string.game_prize_three_bells,
-        5
+        PayoutTable.THREE_BELLS
     ),
     PrizeLine(
         listOf(
@@ -152,63 +154,33 @@ private val PRIZE_LINES = listOf(
             R.drawable.symbol_orange
         ),
         R.string.game_prize_three_same,
-        3
+        PayoutTable.THREE_OF_A_KIND
     ),
     PrizeLine(
         listOf(R.drawable.symbol_seven, R.drawable.symbol_bell, R.drawable.symbol_cherry),
         R.string.game_prize_two_same,
-        2
+        PayoutTable.PAIR
     ),
-    PrizeLine(listOf(R.drawable.symbol_cherry), R.string.game_prize_one_cherry, 1),
-    PrizeLine(emptyList(), R.string.game_prize_other, 0)
+    PrizeLine(
+        listOf(R.drawable.symbol_cherry),
+        R.string.game_prize_one_cherry,
+        PayoutTable.SINGLE_CHERRY
+    ),
+    PrizeLine(emptyList(), R.string.game_prize_other, PayoutTable.NO_PRIZE)
 )
-
-// Avisos de saldo insuficiente (D-09). Se muestran debajo del botón Girar.
-// TEMPORAL: en la Fase 5 pasará a GameUiState y lo calculará el GameViewModel.
-private enum class GameWarning { NO_FUNDS_BONUS_AVAILABLE, NO_FUNDS_BONUS_CLAIMED }
-
-// TEMPORAL (Fase 4): resultado de prueba para ver el panel. En la Fase 5 lo calculará
-// GameEngine y llegará en GameUiState (lastResult).
-private enum class ResultOutcome { WIN, DRAW, LOSS }
-
-private data class TestResult(
-    val outcome: ResultOutcome,
-    val symbols: List<Int>,
-    val bet: Int,
-    val multiplier: Int
-)
-
-// Rota entre victoria (x5), empate (x1) y derrota (x0) en cada pulsación de Girar.
-private fun testResultFor(index: Int, bet: Int): TestResult = when (index % 3) {
-    0 -> TestResult(
-        ResultOutcome.WIN,
-        listOf(R.drawable.symbol_bell, R.drawable.symbol_bell, R.drawable.symbol_bell),
-        bet, 5
-    )
-    1 -> TestResult(
-        ResultOutcome.DRAW,
-        listOf(R.drawable.symbol_cherry, R.drawable.symbol_orange, R.drawable.symbol_grape),
-        bet, 1
-    )
-    else -> TestResult(
-        ResultOutcome.LOSS,
-        listOf(R.drawable.symbol_orange, R.drawable.symbol_bell, R.drawable.symbol_seven),
-        bet, 0
-    )
-}
 
 @Composable
-fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
-    // TEMPORAL: apuesta de prueba para ver funcionar los botones − y +.
-    var bet by remember { mutableStateOf(20) }
-    // TEMPORAL: resultado de prueba que se muestra en el panel cuando termina el giro.
-    var result by remember { mutableStateOf<TestResult?>(null) }
-    var spinCount by remember { mutableStateOf(0) }
-
-    // TEMPORAL: estado del giro. En la Fase 5 vivirá en GameUiState (isSpinning) y el resultado
-    // lo calculará GameEngine; la animación seguirá siendo de la interfaz.
-    var spinning by remember { mutableStateOf(false) }
-    var pending by remember { mutableStateOf<TestResult?>(null) }
+fun GameScreen(
+    uiState: GameUiState,
+    onBackClick: () -> Unit,
+    onDecreaseBet: () -> Unit,
+    onIncreaseBet: () -> Unit,
+    onSpinClick: () -> Unit,
+    onSpinAnimationFinished: () -> Unit,
+    onResultDismissed: () -> Unit
+) {
+    // Estado SOLO de la animación (presentación): lo que se ve en reposo y las franjas al girar.
+    // El saldo, la apuesta y el resultado viven en el GameViewModel (D-13).
     var restSymbols by remember {
         mutableStateOf(
             listOf(R.drawable.symbol_cherry, R.drawable.symbol_seven, R.drawable.symbol_bell)
@@ -218,22 +190,15 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
     // Un Animatable por rodillo: guarda cuántas celdas se ha desplazado su franja.
     val offsets = remember { List(3) { Animatable(0f) } }
 
-    // Estado derivado: se calcula a partir del saldo y del bonus, no se guarda (RF-04).
-    val maxBet = minOf(TEST_MAX_BET, balance / TEST_BET_STEP * TEST_BET_STEP)
-    val canPlay = maxBet >= TEST_MIN_BET
-    // Si el saldo baja de la apuesta elegida, la apuesta se ajusta al máximo permitido.
-    val shownBet = if (canPlay) bet.coerceAtMost(maxBet) else TEST_MIN_BET
-    val warning = when {
-        canPlay -> null
-        canClaimBonus -> GameWarning.NO_FUNDS_BONUS_AVAILABLE
-        else -> GameWarning.NO_FUNDS_BONUS_CLAIMED
-    }
-
-    // Corrutina del giro: se lanza cuando `spinning` pasa a true. Las tres animaciones corren a
-    // la vez (un launch cada una) y coroutineScope espera a que acaben las tres.
-    LaunchedEffect(spinning) {
-        if (!spinning) return@LaunchedEffect
-        val finalResult = pending ?: return@LaunchedEffect
+    // Corrutina del giro: arranca cuando el ViewModel ya tiene el resultado (calculado y guardado
+    // antes de animar, D-02). La animación solo lo representa y nunca lo determina (RF-05, CA-13).
+    LaunchedEffect(uiState.isSpinning, uiState.lastResult) {
+        val finalResult = uiState.lastResult
+        if (!uiState.isSpinning || finalResult == null) return@LaunchedEffect
+        val finalSymbols = finalResult.symbols.map { it.drawableRes() }
+        strips = finalSymbols.mapIndexed { index, final ->
+            buildStrip(restSymbols[index], final, REEL_CELLS[index])
+        }
         coroutineScope {
             offsets.forEachIndexed { index, offset ->
                 launch {
@@ -249,18 +214,17 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
         }
         delay(300) // pausa breve para ver la combinación antes del panel
         // Fin del giro: cada rodillo vuelve a un solo símbolo, el resultado.
-        restSymbols = finalResult.symbols
+        restSymbols = finalSymbols
         strips = emptyList()
         offsets.forEach { it.snapTo(0f) }
-        result = finalResult
-        spinning = false
+        // Lo último: avisa al ViewModel (cambia isSpinning, lo que cancela esta corrutina).
+        onSpinAnimationFinished()
     }
 
     // Con el panel de resultado visible, Atrás equivale a Continuar (D-05, CA-30).
-    BackHandler(enabled = result != null) { result = null }
-    // Girando: el botón Atrás del sistema no hace nada (RF-07, CA-28). El giro ya está guardado
-    // (D-02), así que no se pierde nada por no poder salir hasta que acabe la animación.
-    BackHandler(enabled = spinning) { }
+    BackHandler(enabled = uiState.resultToShow != null) { onResultDismissed() }
+    // Girando: el botón Atrás del sistema no hace nada (RF-07, CA-28).
+    BackHandler(enabled = uiState.isSpinning) { }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -271,8 +235,11 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                BalanceTopBar(balance = balance, onBackClick = onBackClick,
-                    backEnabled = !spinning)
+                BalanceTopBar(
+                    balance = uiState.balance,
+                    onBackClick = onBackClick,
+                    backEnabled = !uiState.isSpinning
+                )
                 Image(
                     painter = painterResource(R.drawable.logo_lucky_sevens),
                     contentDescription = stringResource(R.string.app_name),
@@ -292,27 +259,15 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(12.dp))
             BetPanel(
-                bet = shownBet,
-                selectorEnabled = canPlay && !spinning,
-                canDecrease = canPlay && !spinning && shownBet > TEST_MIN_BET,
-                canIncrease = canPlay && !spinning && shownBet < maxBet,
-                canSpin = canPlay && !spinning,
-                warning = warning,
-                onDecreaseClick = { bet = (shownBet - TEST_BET_STEP).coerceAtLeast(TEST_MIN_BET) },
-                onIncreaseClick = { bet = (shownBet + TEST_BET_STEP).coerceAtMost(maxBet) },
-                onSpinClick = {
-                    // Nunca dos giros a la vez, ni siquiera con dos toques muy rápidos (CA-10).
-                    if (!spinning) {
-                        // TEMPORAL: resultado de prueba, calculado antes de animar (D-02).
-                        val newResult = testResultFor(spinCount, shownBet)
-                        spinCount += 1
-                        strips = newResult.symbols.mapIndexed { index, final ->
-                            buildStrip(restSymbols[index], final, REEL_CELLS[index])
-                        }
-                        pending = newResult
-                        spinning = true
-                    }
-                },
+                bet = uiState.shownBet,
+                selectorEnabled = uiState.canPlay && !uiState.isSpinning,
+                canDecrease = uiState.canDecrease,
+                canIncrease = uiState.canIncrease,
+                canSpin = uiState.canSpin,
+                warning = uiState.warning,
+                onDecreaseClick = onDecreaseBet,
+                onIncreaseClick = onIncreaseBet,
+                onSpinClick = onSpinClick,
                 modifier = Modifier.fillMaxWidth(0.82f)
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -320,16 +275,11 @@ fun GameScreen(balance: Int, canClaimBonus: Boolean, onBackClick: () -> Unit) {
         }
 
         // El panel va después del contenido, así que se dibuja encima de él.
-        result?.let { shown ->
-            ResultOverlay(
-                result = shown,
-                previousBalance = balance,
-                onContinueClick = { result = null }
-            )
+        uiState.resultToShow?.let { shown ->
+            ResultOverlay(result = shown, onContinueClick = onResultDismissed)
         }
     }
 }
-
 // Marco de los rodillos con una ventana por rodillo. Solo se muestra la parte visible del marco
 // (sin sus márgenes transparentes). Cada ventana recibe su franja de símbolos y cuánto se desplaza.
 @Composable
@@ -593,27 +543,27 @@ private fun PrizeRow(line: PrizeLine) {
     }
 }
 
-
-// Panel de resultado sobre Juego (RF-06, CA-30): fondo oscurecido, banner con el texto por
-// código, combinación, línea de premio (solo si hay premio), tabla de cuatro líneas y Continuar.
 @Composable
 private fun ResultOverlay(
-    result: TestResult,
-    previousBalance: Int,
+    result: SpinResult,
     onContinueClick: () -> Unit
 ) {
-    val prize = result.bet * result.multiplier
-    val finalBalance = previousBalance - result.bet + prize
+    // Todo sale del SpinResult (D-13, A): con un saldo real, el saldo visible ya es el nuevo
+    // cuando se abre el panel, así que el saldo anterior se deriva del resultado.
+    val prize = result.prize
+    val multiplier = prize / result.bet
+    val previousBalance = result.balanceAfter + result.bet - prize
+    val finalBalance = result.balanceAfter
 
     val iconRes = when (result.outcome) {
-        ResultOutcome.WIN -> R.drawable.ic_trophy
-        ResultOutcome.DRAW -> R.drawable.ic_handshake
-        ResultOutcome.LOSS -> R.drawable.ic_defeat
+        SpinOutcome.WIN -> R.drawable.ic_trophy
+        SpinOutcome.DRAW -> R.drawable.ic_handshake
+        SpinOutcome.LOSS -> R.drawable.ic_defeat
     }
     val bannerTextRes = when (result.outcome) {
-        ResultOutcome.WIN -> R.string.result_win
-        ResultOutcome.DRAW -> R.string.result_draw
-        ResultOutcome.LOSS -> R.string.result_loss
+        SpinOutcome.WIN -> R.string.result_win
+        SpinOutcome.DRAW -> R.string.result_draw
+        SpinOutcome.LOSS -> R.string.result_loss
     }
 
     Box(
@@ -657,21 +607,21 @@ private fun ResultOverlay(
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row {
-                result.symbols.forEach { symbolRes ->
+                result.symbols.forEach { symbol ->
                     Image(
-                        painter = painterResource(symbolRes),
+                        painter = painterResource(symbol.drawableRes()),
                         contentDescription = null,
                         modifier = Modifier.size(44.dp)
                     )
                 }
             }
-            if (result.multiplier > 0) {
+            if (multiplier > 0) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(
                         R.string.result_prize_line,
                         formatNumber(prize),
-                        result.multiplier
+                        multiplier
                     ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextLight
