@@ -41,80 +41,83 @@ import com.androdevs.luckysevens.ui.theme.StatNegative
 import com.androdevs.luckysevens.ui.theme.StatPositive
 import com.androdevs.luckysevens.ui.theme.TextLight
 import com.androdevs.luckysevens.ui.util.formatNumber
-
-// TEMPORAL (Fase 4): estadísticas de prueba, las del mockup. En las Fases 6 y 7 se calcularán
-// con COUNT y SUM sobre el historial (D-04) y el récord se leerá de la tabla player.
-private const val TEST_TOTAL = 30
-private const val TEST_WINS = 15
-private const val TEST_DRAWS = 5
-private const val TEST_LOSSES = 10
-private const val TEST_NET_BALANCE = 250
-private const val TEST_RECORD = 1250
+import com.androdevs.luckysevens.ui.state.StatsUiState
 
 @Composable
-fun StatsScreen(onBackClick: () -> Unit) {
+fun StatsScreen(uiState: StatsUiState, onBackClick: () -> Unit) {
+    val stats = uiState.stats
     Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
         TitleTopBar(title = stringResource(R.string.menu_stats), onBackClick = onBackClick)
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatCard(
-                    iconRes = R.drawable.ic_gamepad2,
-                    label = stringResource(R.string.stats_total),
-                    value = formatNumber(TEST_TOTAL),
-                    modifier = Modifier.weight(1f)
-                )
-                StatCard(
-                    iconRes = R.drawable.ic_trophy,
-                    label = stringResource(R.string.stats_wins),
-                    value = formatNumber(TEST_WINS),
-                    modifier = Modifier.weight(1f)
+        if (uiState.hasError) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = stringResource(R.string.error_load_failed),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextLight
                 )
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+        } else if (stats != null) {
+            // Mientras llegan los datos de SQLite no se pintan tarjetas: así no se ven ceros falsos.
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 18.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard(
-                    iconRes = R.drawable.ic_handshake,
-                    label = stringResource(R.string.stats_draws),
-                    value = formatNumber(TEST_DRAWS),
-                    modifier = Modifier.weight(1f)
-                )
-                StatCard(
-                    iconRes = R.drawable.ic_coin_stack,
-                    label = stringResource(R.string.stats_net_balance),
-                    value = netBalanceText(TEST_NET_BALANCE),
-                    valueColor = netBalanceColor(TEST_NET_BALANCE),
-                    modifier = Modifier.weight(1f)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatCard(
+                        iconRes = R.drawable.ic_gamepad2,
+                        label = stringResource(R.string.stats_total),
+                        value = formatNumber(stats.total),
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        iconRes = R.drawable.ic_trophy,
+                        label = stringResource(R.string.stats_wins),
+                        value = formatNumber(stats.wins),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatCard(
+                        iconRes = R.drawable.ic_handshake,
+                        label = stringResource(R.string.stats_draws),
+                        value = formatNumber(stats.draws),
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        iconRes = R.drawable.ic_coin_stack,
+                        label = stringResource(R.string.stats_net_balance),
+                        value = netBalanceText(stats.netBalance),
+                        valueColor = netBalanceColor(stats.netBalance),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatCard(
+                        iconRes = R.drawable.ic_defeat,
+                        label = stringResource(R.string.stats_losses),
+                        value = formatNumber(stats.losses),
+                        modifier = Modifier.weight(1f)
+                    )
+                    // Hueco vacío a la derecha, como en el mockup.
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+                RecordCard(record = stats.record)
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatCard(
-                    iconRes = R.drawable.ic_defeat,
-                    label = stringResource(R.string.stats_losses),
-                    value = formatNumber(TEST_LOSSES),
-                    modifier = Modifier.weight(1f)
-                )
-                // Hueco vacío a la derecha, como en el mockup.
-                Spacer(modifier = Modifier.weight(1f))
-            }
-            RecordCard(record = TEST_RECORD)
         }
     }
 }
-
 // Texto del balance neto: con «+» si es positivo (P-07).
 private fun netBalanceText(net: Int): String =
     if (net > 0) "+" + formatNumber(net) else formatNumber(net)

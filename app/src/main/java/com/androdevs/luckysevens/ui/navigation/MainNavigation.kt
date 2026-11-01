@@ -24,7 +24,12 @@ import com.androdevs.luckysevens.ui.screens.WelcomeScreen
 import com.androdevs.luckysevens.ui.state.GameError
 import com.androdevs.luckysevens.ui.state.GameViewModel
 import androidx.compose.ui.res.stringResource
-
+import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.androdevs.luckysevens.LuckySevensApp
+import com.androdevs.luckysevens.ui.state.HistoryViewModel
+import com.androdevs.luckysevens.ui.state.ScreenViewModelFactory
+import com.androdevs.luckysevens.ui.state.StatsViewModel
 @Composable
 fun MainNavigation(viewModel: GameViewModel) {
     val navController = rememberNavController()
@@ -42,7 +47,11 @@ fun MainNavigation(viewModel: GameViewModel) {
             viewModel.onErrorShown()
         }
     }
-
+    // Factory de los ViewModels de Historial y Estadísticas. Cada uno se crea al entrar en su
+    // pantalla y se descarta al salir, así cada visita vuelve a consultar SQLite.
+    val screenViewModelFactory = remember {
+        ScreenViewModelFactory(context.applicationContext as LuckySevensApp)
+    }
     // Vuelve al Menú sin sacarlo nunca de la pila (evita problemas con pulsaciones dobles).
     val goBackToMenu: () -> Unit = {
         navController.popBackStack(Routes.MENU, inclusive = false)
@@ -80,8 +89,18 @@ fun MainNavigation(viewModel: GameViewModel) {
                 onResultDismissed = viewModel::onResultDismissed
             )
         }
-        composable(Routes.HISTORY) { HistoryScreen(onBackClick = goBackToMenu) }
-        composable(Routes.STATS) { StatsScreen(onBackClick = goBackToMenu) }
+        composable(Routes.HISTORY) {
+            val historyViewModel: HistoryViewModel = viewModel(factory = screenViewModelFactory)
+            HistoryScreen(
+                uiState = historyViewModel.uiState,
+                onFilterSelected = historyViewModel::onFilterSelected,
+                onBackClick = goBackToMenu
+            )
+        }
+        composable(Routes.STATS) {
+            val statsViewModel: StatsViewModel = viewModel(factory = screenViewModelFactory)
+            StatsScreen(uiState = statsViewModel.uiState, onBackClick = goBackToMenu)
+        }
         composable(Routes.SETTINGS) { SettingsScreen(onBackClick = goBackToMenu) }
     }
 }
