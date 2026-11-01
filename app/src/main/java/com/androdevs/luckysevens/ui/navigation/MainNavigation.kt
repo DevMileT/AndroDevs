@@ -7,37 +7,37 @@ package com.androdevs.luckysevens.ui.navigation
  *Year: 2026
  */
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.androdevs.luckysevens.R
 import com.androdevs.luckysevens.ui.screens.GameScreen
 import com.androdevs.luckysevens.ui.screens.HistoryScreen
 import com.androdevs.luckysevens.ui.screens.MenuScreen
 import com.androdevs.luckysevens.ui.screens.SettingsScreen
 import com.androdevs.luckysevens.ui.screens.StatsScreen
 import com.androdevs.luckysevens.ui.screens.WelcomeScreen
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-
-// TEMPORAL (Fase 4): valores iniciales de prueba. Para ver los avisos de Juego, cámbialos y
-// vuelve a ejecutar la app (y restáuralos después):
-//   TEST_BALANCE = 0 y TEST_BONUS_AVAILABLE = true  -> «Saldo insuficiente. Reclama tu bonus…»
-//   TEST_BALANCE = 0 y TEST_BONUS_AVAILABLE = false -> «No puedes jugar hasta mañana»
-private const val TEST_BALANCE = 1000
-private const val TEST_BONUS_AVAILABLE = true
+import com.androdevs.luckysevens.ui.state.GameError
+import com.androdevs.luckysevens.ui.state.GameViewModel
 
 @Composable
-fun MainNavigation() {
+fun MainNavigation(viewModel: GameViewModel) {
     val navController = rememberNavController()
-    // TEMPORAL (Fase 4): estado de prueba del saldo y del bonus. Se sustituye por el
-    // GameViewModel y la base de datos en las Fases 5 y 6.
-    var testBalance by remember { mutableStateOf(TEST_BALANCE) }
-    var testBonusAvailable by remember { mutableStateOf(TEST_BONUS_AVAILABLE) }
+    // El saldo y el bonus vienen del GameViewModel (SQLite) y se pasan a las pantallas que los
+    // muestran: Menú y Juego (D-09). Si el estado cambia, estas pantallas se repintan.
+    val uiState = viewModel.uiState
 
-
+    // Aviso breve si algo falla al leer o guardar (sin mockup: diseño provisional).
+    val context = LocalContext.current
+    LaunchedEffect(uiState.error) {
+        val error = uiState.error ?: return@LaunchedEffect
+        Toast.makeText(context, context.getString(errorTextRes(error)), Toast.LENGTH_LONG).show()
+        viewModel.onErrorShown()
+    }
 
     // Vuelve al Menú sin sacarlo nunca de la pila (evita problemas con pulsaciones dobles).
     val goBackToMenu: () -> Unit = {
@@ -56,22 +56,19 @@ fun MainNavigation() {
         }
         composable(Routes.MENU) {
             MenuScreen(
-                balance = testBalance,
-                canClaimBonus = testBonusAvailable,
+                balance = uiState.balance,
+                canClaimBonus = uiState.canClaimBonus,
                 onPlayClick = { navController.navigate(Routes.GAME) },
                 onHistoryClick = { navController.navigate(Routes.HISTORY) },
                 onStatsClick = { navController.navigate(Routes.STATS) },
                 onSettingsClick = { navController.navigate(Routes.SETTINGS) },
-                onClaimBonusClick = {
-                    testBalance += 50
-                    testBonusAvailable = false
-                }
+                onClaimBonusClick = viewModel::onClaimBonusClicked
             )
         }
         composable(Routes.GAME) {
             GameScreen(
-                balance = testBalance,
-                canClaimBonus = testBonusAvailable,
+                balance = uiState.balance,
+                canClaimBonus = uiState.canClaimBonus,
                 onBackClick = goBackToMenu
             )
         }
@@ -79,4 +76,10 @@ fun MainNavigation() {
         composable(Routes.STATS) { StatsScreen(onBackClick = goBackToMenu) }
         composable(Routes.SETTINGS) { SettingsScreen(onBackClick = goBackToMenu) }
     }
+}
+
+private fun errorTextRes(error: GameError): Int = when (error) {
+    GameError.LOAD_FAILED -> R.string.error_load_failed
+    GameError.SPIN_FAILED -> R.string.error_spin_failed
+    GameError.BONUS_FAILED -> R.string.error_bonus_failed
 }

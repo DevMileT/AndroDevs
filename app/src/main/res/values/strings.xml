@@ -67,4 +67,8 @@
     <string name="result_final_balance">Saldo final</string>
     <string name="result_continue">Continuar</string>
 
+    <string name="error_load_failed">No se pudieron cargar tus datos</string>
+    <string name="error_spin_failed">No se pudo completar el giro</string>
+    <string name="error_bonus_failed">No se pudo reclamar el bonus</string>
+
 </resources>
