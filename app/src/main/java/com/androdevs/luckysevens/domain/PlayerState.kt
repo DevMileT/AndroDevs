@@ -19,7 +19,7 @@ data class PlayerState(
     val lastBonusDate: LocalDate? = null
 ) {
     init {
-        // Segunda barrera de CA-11 (la primera es el CHECK de SQL de D-04).
+        // Segunda barrera (la primera es el CHECK de SQL).
         require(balance >= 0) { "El saldo no puede ser negativo: $balance" }
     }
 

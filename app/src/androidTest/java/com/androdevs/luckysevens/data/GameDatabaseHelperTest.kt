@@ -19,7 +19,7 @@ import org.junit.runner.RunWith
 import android.database.sqlite.SQLiteConstraintException
 
 /**
- * Prueba la creación de la base de datos (D-04). Se ejecuta en el móvil.
+ * Prueba la creación de la base de datos. Se ejecuta en el móvil.
  * Usa una base EN MEMORIA (name = null): no toca la base real de la app y desaparece al cerrarse.
  */
 @RunWith(AndroidJUnit4::class)
@@ -32,7 +32,7 @@ class GameDatabaseHelperTest {
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         helper = GameDatabaseHelper(context, null)
-        db = helper.writableDatabase // aquí se ejecuta onCreate
+        db = helper.writableDatabase // se ejecuta onCreate
     }
 
     @After

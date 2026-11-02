@@ -7,7 +7,7 @@ package com.androdevs.luckysevens.ui.navigation
  *Year: 2026
  */
 
-// Nombres de las seis rutas de D-05, definidos en un único lugar.
+// Nombres de las seis rutas, definidos en un único lugar.
 object Routes {
     const val WELCOME = "welcome"
     const val MENU = "menu"

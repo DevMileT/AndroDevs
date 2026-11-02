@@ -13,10 +13,10 @@ import android.database.sqlite.SQLiteOpenHelper
 import com.androdevs.luckysevens.domain.GameConstants
 
 /**
- * Crea y abre la base de datos SQLite (D-03, D-04). Solo crea las tablas: las consultas viven
+ * Crea y abre la base de datos SQLite. Solo crea las tablas: las consultas viven
  * en los repositorios. Debe haber UNA sola instancia en toda la app.
  * getWritableDatabase() puede tardar la primera vez, así que nunca se llama desde el hilo
- * principal (RNF-03).
+ * principal.
  */
 class GameDatabaseHelper(
     context: Context,
@@ -52,14 +52,13 @@ class GameDatabaseHelper(
         db.execSQL(
             "CREATE INDEX idx_spin_history_outcome ON $TABLE_SPIN_HISTORY ($COL_OUTCOME)"
         )
-        // Fila inicial del jugador (RF-08): saldo y récord parten de INITIAL_BALANCE (P-08).
+        // Fila inicial del jugador: saldo y récord parten de INITIAL_BALANCE
         db.execSQL(
             "INSERT INTO $TABLE_PLAYER ($COL_ID, $COL_BALANCE, $COL_RECORD) " +
                     "VALUES (1, ${GameConstants.INITIAL_BALANCE}, ${GameConstants.INITIAL_BALANCE})"
         )
     }
 
-    /** Vacío en la Tarea 1: la base empieza en la versión 1. Se usará en la Tarea 2. */
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
     }
 

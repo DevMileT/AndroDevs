@@ -9,7 +9,7 @@ package com.androdevs.luckysevens.domain
 
 /**
  * Parte del árbitro tras un giro: todo lo necesario para mostrar el resultado y guardarlo.
- * prize es el premio TOTAL (multiplicador x apuesta), no el beneficio neto (sección 2.2).
+ * prize es el premio TOTAL (multiplicador x apuesta), no el beneficio neto.
  */
 data class SpinResult(
     val bet: Int,

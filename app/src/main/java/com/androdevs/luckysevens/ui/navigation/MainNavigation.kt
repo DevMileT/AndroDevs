@@ -34,7 +34,7 @@ import com.androdevs.luckysevens.ui.state.StatsViewModel
 fun MainNavigation(viewModel: GameViewModel) {
     val navController = rememberNavController()
     // El saldo y el bonus vienen del GameViewModel (SQLite) y se pasan a las pantallas que los
-    // muestran: Menú y Juego (D-09). Si el estado cambia, estas pantallas se repintan.
+    // muestran: Menú y Juego. Si el estado cambia, estas pantallas se repintan.
     val uiState = viewModel.uiState
 
     // Aviso breve si algo falla al leer o guardar (sin mockup: diseño provisional).

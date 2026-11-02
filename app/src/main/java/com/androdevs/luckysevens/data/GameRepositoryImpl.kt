@@ -13,9 +13,9 @@ import com.androdevs.luckysevens.domain.DateProvider
 import com.androdevs.luckysevens.domain.GameConstants
 import com.androdevs.luckysevens.domain.SystemDateProvider
 /**
- * Implementación de GameRepository con SQLite (D-03). Todo el trabajo de base de datos se
- * ejecuta en un hilo de fondo (subscribeOn), nunca en el principal (RNF-03).
- * gameEngine y nowMillis llegan desde fuera para poder sustituirlos en las pruebas (D-13).
+ * Implementación de GameRepository con SQLite. Todo el trabajo de base de datos se
+ * ejecuta en un hilo de fondo (subscribeOn), nunca en el principal.
+ * gameEngine y nowMillis llegan desde fuera para poder sustituirlos en las pruebas.
  */
 class GameRepositoryImpl(
     private val helper: GameDatabaseHelper,
@@ -37,7 +37,7 @@ class GameRepositoryImpl(
             .subscribeOn(Schedulers.io())
 
     /**
-     * Resuelve un giro y guarda saldo, récord e historial en UNA transacción (D-02, RNF-04):
+     * Resuelve un giro y guarda saldo, récord e historial en UNA transacción:
      * o se guarda todo o no se guarda nada. Debe llamarse desde un hilo de fondo.
      */
     private fun spinInTransaction(bet: Int): SpinResult {
@@ -45,7 +45,7 @@ class GameRepositoryImpl(
         db.beginTransaction()
         try {
             val state = readPlayerState(db)
-            // Lanza IllegalArgumentException si la apuesta no es válida (D-12): no se escribe nada.
+            // Lanza IllegalArgumentException si la apuesta no es válida: no se escribe nada.
             val result = gameEngine.spin(state, bet)
             val newState = state.withBalance(result.balanceAfter)
 
@@ -98,12 +98,12 @@ class GameRepositoryImpl(
     }
 
     /**
-     * Reclama el bonus con un único UPDATE condicionado (D-04, CA-16): comprobar y escribir
+     * Reclama el bonus con un único UPDATE condicionado: comprobar y escribir
      * ocurren a la vez, así que dos llamadas seguidas no pueden sumar dos veces.
      * Devuelve true si se concedió ahora (1 fila modificada) y false si ya estaba reclamado hoy.
      */
     private fun claimBonusNow(): Boolean {
-        val today = dateProvider.today().toString() // formato ISO AAAA-MM-DD (D-04)
+        val today = dateProvider.today().toString() // formato ISO AAAA-MM-DD
         val sql = "UPDATE ${GameDatabaseHelper.TABLE_PLAYER} SET " +
                 "${GameDatabaseHelper.COL_BALANCE} = ${GameDatabaseHelper.COL_BALANCE} + ?, " +
                 "${GameDatabaseHelper.COL_RECORD} = " +

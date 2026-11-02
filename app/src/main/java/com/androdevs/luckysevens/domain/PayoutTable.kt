@@ -13,7 +13,7 @@ package com.androdevs.luckysevens.domain
  */
 object PayoutTable {
 
-    // Multiplicadores con nombre: la tarjeta de premios de Juego los leerá (D-08, D-12).
+    // Multiplicadores con nombre: la tarjeta de premios de Juego los leerá.
     const val THREE_SEVENS = 10
     const val THREE_BELLS = 5
     const val THREE_OF_A_KIND = 3   // Tres iguales de cereza, limón, uva o naranja

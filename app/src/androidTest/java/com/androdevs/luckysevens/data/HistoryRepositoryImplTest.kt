@@ -22,10 +22,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * Pruebas de HistoryRepositoryImpl en el móvil, con una base EN MEMORIA.
- * Las filas del historial se insertan con SQL directo para controlar lo que se lee.
- */
 @RunWith(AndroidJUnit4::class)
 class HistoryRepositoryImplTest {
 
@@ -54,7 +50,7 @@ class HistoryRepositoryImplTest {
         )
     }
 
-    /** Cuatro partidas: una victoria, un empate y dos derrotas (la última, la más reciente). */
+    /** Cuatro partidas: una victoria, un empate y dos derrotas la última, la más reciente. */
     private fun insertFourSpins() {
         insertSpin(1, 20, "SEVEN,SEVEN,SEVEN", 200, "WIN", 1180)
         insertSpin(2, 20, "CHERRY,LEMON,GRAPE", 20, "DRAW", 1180)
@@ -64,7 +60,7 @@ class HistoryRepositoryImplTest {
 
     @Test
     fun getHistory_onNewDatabase_returnsEmptyList() {
-        // CA-01: primer arranque, sin historial.
+        // primer arranque, sin historial.
         assertTrue(repository.getHistory(HistoryFilter.ALL).blockingGet().isEmpty())
     }
 
@@ -93,7 +89,7 @@ class HistoryRepositoryImplTest {
 
     @Test
     fun getHistory_returnsMostRecentFirst() {
-        // RF-10: de la más reciente a la más antigua.
+        // de la más reciente a la más antigua.
         insertFourSpins()
 
         val history = repository.getHistory(HistoryFilter.ALL).blockingGet()
@@ -103,7 +99,7 @@ class HistoryRepositoryImplTest {
 
     @Test
     fun getHistory_filterReturnsOnlyThatOutcome() {
-        // CA-22: cada filtro muestra solo sus partidas, de la más reciente a la más antigua.
+        // cada filtro muestra solo sus partidas, de la más reciente a la más antigua.
         insertFourSpins()
 
         assertEquals(4, repository.getHistory(HistoryFilter.ALL).blockingGet().size)
@@ -123,7 +119,7 @@ class HistoryRepositoryImplTest {
 
     @Test
     fun getStats_onNewDatabase_returnsZerosAndInitialRecord() {
-        // CA-01: sin partidas, todo a cero y el récord inicial (1.000).
+        // sin partidas, todo a cero y el récord inicial (1.000).
         val stats = repository.getStats().blockingGet()
 
         assertEquals(
@@ -135,7 +131,7 @@ class HistoryRepositoryImplTest {
 
     @Test
     fun getStats_countsOutcomesAndAddsNetBalance() {
-        // CA-23: total = victorias + empates + derrotas; balance neto = suma de (premio - apuesta).
+        // total = victorias + empates + derrotas; balance neto = suma de (premio - apuesta).
         // Netos: +180, 0, -20 y -10 = +150. El récord sale de player, no del historial.
         insertFourSpins()
         helper.writableDatabase.execSQL("UPDATE player SET record = 1250 WHERE id = 1")

@@ -11,16 +11,16 @@ import com.androdevs.luckysevens.domain.GameConstants
 import com.androdevs.luckysevens.domain.GameEngine
 import com.androdevs.luckysevens.domain.SpinResult
 
-/** Avisos de saldo insuficiente (D-09). La pantalla elige el texto desde strings.xml. */
+/** Avisos de saldo insuficiente. La pantalla elige el texto desde strings.xml. */
 enum class GameWarning { NO_FUNDS_BONUS_AVAILABLE, NO_FUNDS_BONUS_CLAIMED }
 
-/** Errores que puede mostrar la interfaz. Son un tipo y no un texto (RNF-11). */
+/** Errores que puede mostrar la interfaz. Son un tipo y no un texto. */
 enum class GameError { LOAD_FAILED, SPIN_FAILED, BONUS_FAILED }
 
 /**
  * Todo lo que la pantalla de Juego necesita ver. Los datos guardados son los de arriba; lo
- * demás se DERIVA y no se guarda (D-13, decisión 7), así no puede desincronizarse.
- * balance es el saldo VISIBLE: durante un giro es el anterior al giro (RF-07, D-02).
+ * demás se DERIVA y no se guarda, así no puede desincronizarse.
+ * balance es el saldo VISIBLE: durante un giro es el anterior al giro.
  */
 data class GameUiState(
     val balance: Int = 0,
@@ -36,13 +36,13 @@ data class GameUiState(
 
     val canPlay: Boolean get() = maxBet >= GameConstants.MIN_BET
 
-    /** Apuesta que se muestra: se ajusta sola si el saldo baja de la elegida (RF-04, CA-12). */
+    /** Apuesta que se muestra: se ajusta sola si el saldo baja de la elegida. */
     val shownBet: Int get() = if (canPlay) bet.coerceAtMost(maxBet) else GameConstants.MIN_BET
 
     val canDecrease: Boolean get() = canPlay && !isSpinning && shownBet > GameConstants.MIN_BET
     val canIncrease: Boolean get() = canPlay && !isSpinning && shownBet < maxBet
 
-    /** Girar se bloquea mientras carga, mientras gira o si no hay saldo (RF-07, CA-10). */
+    /** Girar se bloquea mientras carga, mientras gira o si no hay saldo. */
     val canSpin: Boolean get() = !isLoading && canPlay && !isSpinning
 
     /** Resultado para el panel: solo se muestra cuando la animación ha terminado. */

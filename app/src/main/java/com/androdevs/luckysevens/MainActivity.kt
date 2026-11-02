@@ -16,7 +16,7 @@ import com.androdevs.luckysevens.ui.theme.LuckySevensTheme
 
 class MainActivity : ComponentActivity() {
 
-    // Un único GameViewModel para toda la app (D-03); la factory le da sus dependencias.
+    // Un único GameViewModel para toda la app; la factory le da sus dependencias.
     private val gameViewModel: GameViewModel by viewModels {
         GameViewModelFactory(application as LuckySevensApp)
     }
@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
     }
 
     // Al abrir la app y al volver de segundo plano se relee el saldo y el estado del bonus
-    // desde SQLite (CA-20: si cambió el día, el botón del bonus se actualiza).
+    // desde SQLite: si cambió el día, el botón del bonus se actualiza.
     override fun onResume() {
         super.onResume()
         gameViewModel.refreshState()

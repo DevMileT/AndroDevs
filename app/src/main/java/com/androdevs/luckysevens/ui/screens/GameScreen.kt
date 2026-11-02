@@ -100,9 +100,7 @@ private const val WINDOW_HEIGHT = 228f
 private val WINDOW_LEFT = floatArrayOf(89f, 243f, 395f)
 private val WINDOW_WIDTH = floatArrayOf(127f, 125f, 126f)
 
-
-
-// Los seis símbolos posibles de un rodillo (sección 2).
+// Los seis símbolos posibles de un rodillo.
 private val ALL_SYMBOLS = listOf(
     R.drawable.symbol_cherry,
     R.drawable.symbol_lemon,
@@ -113,7 +111,7 @@ private val ALL_SYMBOLS = listOf(
 )
 
 // Celdas que recorre cada rodillo durante el giro y su duración. El primero para antes y el
-// último después, así los rodillos se detienen de forma progresiva (RF-05).
+// último después, así los rodillos se detienen de forma progresiva.
 private val REEL_CELLS = intArrayOf(10, 16, 22)
 private val REEL_DURATION_MS = intArrayOf(1200, 1700, 2200)
 
@@ -126,15 +124,15 @@ private fun buildStrip(from: Int, result: Int, cells: Int): List<Int> =
 // de ellos (la fila más ancha), para que todos los textos empiecen en la misma columna.
 private val PRIZE_SYMBOL_SIZE = 22.dp
 private val PRIZE_SYMBOLS_COLUMN_WIDTH = PRIZE_SYMBOL_SIZE * 4
-// Una línea de la tabla de premios (D-08): dibujos de la combinación, texto y multiplicador.
+// Una línea de la tabla de premios: dibujos de la combinación, texto y multiplicador.
 private data class PrizeLine(
     val symbols: List<Int>,
     val descriptionRes: Int?,
     val multiplier: Int
 )
 
-// Las seis líneas de D-08. Los multiplicadores se leen de PayoutTable, así la tarjeta no puede
-// desincronizarse de la lógica (RNF-07, D-12).
+// Las seis líneas. Los multiplicadores se leen de PayoutTable, así la tarjeta no puede
+// desincronizarse de la lógica.
 private val PRIZE_LINES = listOf(
     PrizeLine(
         listOf(R.drawable.symbol_seven, R.drawable.symbol_seven, R.drawable.symbol_seven),
@@ -180,7 +178,7 @@ fun GameScreen(
     onResultDismissed: () -> Unit
 ) {
     // Estado SOLO de la animación (presentación): lo que se ve en reposo y las franjas al girar.
-    // El saldo, la apuesta y el resultado viven en el GameViewModel (D-13).
+    // El saldo, la apuesta y el resultado viven en el GameViewModel.
     var restSymbols by remember {
         mutableStateOf(
             listOf(R.drawable.symbol_cherry, R.drawable.symbol_seven, R.drawable.symbol_bell)
@@ -191,7 +189,7 @@ fun GameScreen(
     val offsets = remember { List(3) { Animatable(0f) } }
 
     // Corrutina del giro: arranca cuando el ViewModel ya tiene el resultado (calculado y guardado
-    // antes de animar, D-02). La animación solo lo representa y nunca lo determina (RF-05, CA-13).
+    // antes de animar. La animación solo lo representa y nunca lo determina.
     LaunchedEffect(uiState.isSpinning, uiState.lastResult) {
         val finalResult = uiState.lastResult
         if (!uiState.isSpinning || finalResult == null) return@LaunchedEffect
@@ -217,13 +215,13 @@ fun GameScreen(
         restSymbols = finalSymbols
         strips = emptyList()
         offsets.forEach { it.snapTo(0f) }
-        // Lo último: avisa al ViewModel (cambia isSpinning, lo que cancela esta corrutina).
+        //avisa al ViewModel (cambia isSpinning, lo que cancela esta corrutina).
         onSpinAnimationFinished()
     }
 
-    // Con el panel de resultado visible, Atrás equivale a Continuar (D-05, CA-30).
+    // Con el panel de resultado visible, Atrás equivale a Continuar.
     BackHandler(enabled = uiState.resultToShow != null) { onResultDismissed() }
-    // Girando: el botón Atrás del sistema no hace nada (RF-07, CA-28).
+    // Girando: el botón Atrás del sistema no hace nada.
     BackHandler(enabled = uiState.isSpinning) { }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -477,7 +475,7 @@ private fun SpinButton(enabled: Boolean, onClick: () -> Unit) {
     }
 }
 
-// Tarjeta con la tabla de premios completa, en seis líneas agrupadas (D-08).
+// Tarjeta con la tabla de premios completa, en seis líneas agrupadas.
 @Composable
 private fun PrizesCard(modifier: Modifier = Modifier) {
     Column(
@@ -548,7 +546,7 @@ private fun ResultOverlay(
     result: SpinResult,
     onContinueClick: () -> Unit
 ) {
-    // Todo sale del SpinResult (D-13, A): con un saldo real, el saldo visible ya es el nuevo
+     // Todo sale del SpinResult: con un saldo real, el saldo visible ya es el nuevo
     // cuando se abre el panel, así que el saldo anterior se deriva del resultado.
     val prize = result.prize
     val multiplier = prize / result.bet
@@ -592,7 +590,7 @@ private fun ResultOverlay(
                 contentDescription = null,
                 modifier = Modifier.height(56.dp)
             )
-            // Banner único sin texto (D-06): el texto se pone encima, sobre la cinta.
+            //Banner único sin texto: el texto se pone encima, sobre la cinta.
             Box(contentAlignment = Alignment.Center) {
                 Image(
                     painter = painterResource(R.drawable.banner_result),
@@ -702,7 +700,7 @@ private const val RIBBON_END_X = 577f / 707f
 private const val RIBBON_EDGE_Y = 197.5f / 353f
 private const val RIBBON_CONTROL_Y = 106.5f / 353f
 
-// Texto que sigue el arco de la cinta del banner. Excepción a D-06 («sin Canvas»), solo para esto.
+// Texto que sigue el arco de la cinta del banner. Excepción sin Canvas, solo para esto.
 // El texto no se parte en líneas: si no cabe en la cinta, se reduce hasta que quepa.
 @Composable
 private fun CurvedBannerText(text: String, modifier: Modifier = Modifier) {

@@ -28,8 +28,8 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 /**
- * Implementación de HistoryRepository con SQLite (D-03, D-04). Solo lee: nunca modifica la
- * partida. El trabajo se ejecuta en un hilo de fondo (RNF-03).
+ * Implementación de HistoryRepository con SQLite. Solo lee: nunca modifica la
+ * partida. El trabajo se ejecuta en un hilo de fondo.
  */
 class HistoryRepositoryImpl(
     private val helper: GameDatabaseHelper
@@ -43,7 +43,7 @@ class HistoryRepositoryImpl(
         Single.fromCallable { readStats() }
             .subscribeOn(Schedulers.io())
 
-    /** Partidas de la más reciente a la más antigua (RF-10), filtradas por resultado (CA-22). */
+    /** Partidas de la más reciente a la más antigua, filtradas por resultado. */
     private fun readHistory(filter: HistoryFilter): List<SpinRecord> {
         val outcome = filter.outcome
         // ALL no filtra; los demás filtros añaden WHERE con el resultado como parámetro (?).
@@ -60,7 +60,7 @@ class HistoryRepositoryImpl(
                         playedAt = cursor.getLong(0),
                         result = SpinResult(
                             bet = cursor.getInt(1),
-                            // Los símbolos se guardan como texto separado por comas (D-04).
+                            // Los símbolos se guardan como texto separado por comas.
                             symbols = cursor.getString(2).split(",").map { Symbol.valueOf(it) },
                             prize = cursor.getInt(3),
                             outcome = SpinOutcome.valueOf(cursor.getString(4)),
@@ -74,7 +74,7 @@ class HistoryRepositoryImpl(
     }
 
     /**
-     * Estadísticas con COUNT/SUM sobre el historial (D-04, CA-23). En SQLite una comparación
+     * Estadísticas con COUNT/SUM sobre el historial. En SQLite una comparación
      * vale 1 o 0, así que SUM(outcome = 'WIN') cuenta las victorias. El récord sale de player.
      */
     private fun readStats(): GameStats {

@@ -22,9 +22,8 @@ import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 /**
- * Estado y acciones de la partida (D-03, D-13). El repositorio ya trabaja en un hilo de fondo;
+ * Estado y acciones de la partida. El repositorio ya trabaja en un hilo de fondo;
  * aquí se recibe la respuesta en el hilo principal (observeOn) para poder tocar el estado.
- * mainScheduler se puede sustituir en las pruebas del PC.
  */
 class GameViewModel(
     private val gameRepository: GameRepository,
@@ -39,7 +38,7 @@ class GameViewModel(
     // Guarda las suscripciones para cancelarlas al destruirse el ViewModel.
     private val disposables = CompositeDisposable()
 
-    /** Lee el saldo y el estado del bonus de SQLite. Se llama en onResume (CA-20). */
+    /** Lee el saldo y el estado del bonus de SQLite. Se llama en onResume. */
     fun refreshState() {
         disposables.add(
             gameRepository.getPlayerState()
@@ -47,7 +46,7 @@ class GameViewModel(
                 .subscribe(
                     { state ->
                         uiState = uiState.copy(
-                            // Durante un giro el saldo visible no cambia (RF-07, D-02).
+                            // Durante un giro el saldo visible no cambia.
                             balance = if (uiState.isSpinning) uiState.balance else state.balance,
                             canClaimBonus = bonusRules.canClaim(state.lastBonusDate),
                             isLoading = false
@@ -71,8 +70,8 @@ class GameViewModel(
     }
 
     /**
-     * Pulsar Girar. isSpinning se activa YA, antes de que llegue el resultado, así un segundo
-     * toque no genera otro giro (CA-10). El giro se guarda en SQLite al pedirlo (D-02).
+     * Pulsar Girar. isSpinning se activa, antes de que llegue el resultado, así un segundo
+     * toque no genera otro giro. El giro se guarda en SQLite al pedirlo.
      */
     fun onSpinClicked() {
         val state = uiState
@@ -83,7 +82,7 @@ class GameViewModel(
                 .observeOn(mainScheduler)
                 .subscribe(
                     { result -> uiState = uiState.copy(lastResult = result) },
-                    // Todo error libera isSpinning, o el Atrás quedaría bloqueado (decisión B).
+                    // Todo error libera isSpinning, o el Atrás quedaría bloqueado.
                     { uiState = uiState.copy(isSpinning = false, error = GameError.SPIN_FAILED) }
                 )
         )
@@ -100,7 +99,7 @@ class GameViewModel(
         uiState = uiState.copy(lastResult = null)
     }
 
-    /** Reclamar el bonus. La barrera real contra dobles pulsaciones es el UPDATE (CA-16). */
+    /** Reclamar el bonus. La barrera real contra dobles pulsaciones es el UPDATE. */
     fun onClaimBonusClicked() {
         if (!uiState.canClaimBonus) return
         disposables.add(
@@ -129,7 +128,7 @@ class GameViewModel(
     }
 }
 
-/** Crea el GameViewModel con las dependencias de la Application (sin Hilt, D-03). */
+/** Crea el GameViewModel con las dependencias de la Application sin Hilt. */
 class GameViewModelFactory(private val app: LuckySevensApp) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {

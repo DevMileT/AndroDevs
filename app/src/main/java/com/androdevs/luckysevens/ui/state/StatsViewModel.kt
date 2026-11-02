@@ -22,7 +22,7 @@ data class StatsUiState(
     val hasError: Boolean = false
 )
 
-/** Estadísticas calculadas desde el historial (RF-11, CA-23). Se crea al entrar en la pantalla. */
+/** Estadísticas calculadas desde el historial. Se crea al entrar en la pantalla. */
 class StatsViewModel(
     historyRepository: HistoryRepository,
     mainScheduler: Scheduler = AndroidSchedulers.mainThread()

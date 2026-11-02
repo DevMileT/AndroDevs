@@ -74,7 +74,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun getPlayerState_onNewDatabase_returnsInitialState() {
-        // blockingGet() espera al resultado: solo se usa en pruebas, nunca en la app.
+        // blockingGet() espera al resultado: solo se usa en pruebas.
         val state = repository.getPlayerState().blockingGet()
 
         assertEquals(
@@ -109,7 +109,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun spin_threeSevens_savesBalanceRecordAndHistory() {
-        // CA-04: apuesta 20 y 7-7-7 = premio 200 y saldo 1000 - 20 + 200 = 1180.
+        // apuesta 20 y 7-7-7 = premio 200 y saldo 1000 - 20 + 200 = 1180.
         val result = repositoryWith(Symbol.SEVEN, Symbol.SEVEN, Symbol.SEVEN)
             .spin(20).blockingGet()
 
@@ -138,7 +138,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun spin_loss_reducesBalanceAndKeepsRecord() {
-        // CA-07: apuesta 20 y limón-limón-uva = premio 0 y saldo -20; el récord no baja.
+        // apuesta 20 y limón-limón-uva = premio 0 y saldo -20; el récord no baja.
         val result = repositoryWith(Symbol.LEMON, Symbol.LEMON, Symbol.GRAPE)
             .spin(20).blockingGet()
 
@@ -167,7 +167,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun spin_ifHistoryInsertFails_balanceIsNotChanged() {
-        // Atomicidad (D-02): se borra la tabla del historial a propósito. El saldo se actualiza
+        // se borra la tabla del historial a propósito. El saldo se actualiza
         // primero y el INSERT del historial falla después: la transacción debe deshacerlo todo.
         helper.writableDatabase.execSQL("DROP TABLE spin_history")
 
@@ -185,7 +185,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun claimBonus_firstTime_addsBonusSavesDateAndReturnsTrue() {
-        // CA-14: sin reclamación previa, sube 50 y se guarda la fecha de hoy.
+        //sin reclamación previa, sube 50 y se guarda la fecha de hoy.
         val today = LocalDate.of(2026, 11, 2)
         val repo = repositoryWithDate(FakeDateProvider(today))
 
@@ -199,7 +199,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun claimBonus_twiceSameDay_addsOnlyOnce() {
-        // CA-16 y CA-17: la segunda vez el mismo día no suma nada.
+        // la segunda vez el mismo día no suma nada.
         val repo = repositoryWithDate(FakeDateProvider(LocalDate.of(2026, 11, 2)))
 
         assertTrue(repo.claimBonus().blockingGet())
@@ -210,7 +210,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun claimBonus_simultaneousCalls_addsOnlyOnce() {
-        // Dos llamadas a la vez (cada una en su hilo de fondo): solo una puede ganar.
+        // Dos llamadas a la vez cada una en su hilo de fondo: solo una puede ganar.
         val repo = repositoryWithDate(FakeDateProvider(LocalDate.of(2026, 11, 2)))
 
         val results = Single.zip(repo.claimBonus(), repo.claimBonus()) { a, b -> listOf(a, b) }
@@ -222,7 +222,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun claimBonus_onLaterDays_addsOnlyOneBonusEach() {
-        // CA-18: al día siguiente se puede reclamar; tras varios días sin abrir, solo 50.
+        // al día siguiente se puede reclamar; tras varios días sin abrir, solo 50.
         val dates = FakeDateProvider(LocalDate.of(2026, 11, 2))
         val repo = repositoryWithDate(dates)
 
@@ -237,7 +237,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun claimBonus_neverLowersRecord() {
-        // CA-24: el récord solo sube. Saldo 500 y récord 1200: tras el bonus, 550 y 1200.
+        // el récord solo sube. Saldo 500 y récord 1200: tras el bonus, 550 y 1200.
         helper.writableDatabase.execSQL("UPDATE player SET balance = 500, record = 1200 WHERE id = 1")
         val repo = repositoryWithDate(FakeDateProvider(LocalDate.of(2026, 11, 2)))
 
@@ -263,8 +263,7 @@ class GameRepositoryImplTest {
 
     @Test
     fun claimBonus_agreesWithBonusRules() {
-        // La regla de Kotlin (BonusRules) y la del SQL deben decir lo mismo cada día,
-        // incluido un reloj que vuelve atrás ("distinta de hoy", D-12).
+        // incluido un reloj que vuelve atrás "distinta de hoy".
         val dates = FakeDateProvider(LocalDate.of(2026, 11, 2))
         val repo = repositoryWithDate(dates)
         val rules = BonusRules(dates)

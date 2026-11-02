@@ -19,6 +19,6 @@ data class GameStats(
     val netBalance: Int,
     val record: Int
 ) {
-    /** Total de partidas: no se guarda, se calcula, así nunca puede desincronizarse (CA-23). */
+    /**Total de partidas: no se guarda, se calcula, así nunca puede desincronizarse.*/
     val total: Int get() = wins + draws + losses
 }

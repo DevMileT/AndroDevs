@@ -59,9 +59,6 @@ fun SettingsScreen(onBackClick: () -> Unit) {
     }
 }
 
-// Nombre de versión de la app (versionName de build.gradle.kts), leído del sistema para no
-// duplicarlo a mano. getPackageInfo(String, Int) está marcado como obsoleto desde Android 13,
-// pero sigue funcionando y evita añadir código solo para versiones nuevas.
 @Suppress("DEPRECATION")
 @Composable
 private fun appVersionName(): String {

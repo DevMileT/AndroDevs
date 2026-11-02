@@ -12,7 +12,7 @@ import java.time.LocalDate
 /**
  * Contrato del reloj: "dime qué día es hoy".
  * BonusRules solo conoce esta interfaz, así las pruebas pueden usar un calendario falso
- * y cambiar el día a voluntad (RNF-06).
+ * y cambiar el día a voluntad.
  */
 interface DateProvider {
     /** La fecha de hoy según el calendario local del dispositivo. */

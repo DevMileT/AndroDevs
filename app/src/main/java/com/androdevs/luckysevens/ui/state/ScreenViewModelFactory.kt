@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.androdevs.luckysevens.LuckySevensApp
 
-/** Crea los ViewModels de Historial y Estadísticas con el repositorio de la Application (sin Hilt). */
+/** Crea los ViewModels de Historial y Estadísticas con el repositorio de la Application sin Hilt. */
 class ScreenViewModelFactory(private val app: LuckySevensApp) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T =

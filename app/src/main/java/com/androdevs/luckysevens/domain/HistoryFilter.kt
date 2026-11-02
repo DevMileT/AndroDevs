@@ -7,7 +7,7 @@ package com.androdevs.luckysevens.domain
  *Year: 2026
  */
 /**
- * Filtro del historial por resultado .
+ * Filtro del historial por resultado.
  * Cada filtro sabe qué resultado le corresponde; ALL no filtra y por eso no tiene ninguno.
  */
 enum class HistoryFilter(val outcome: SpinOutcome?) {

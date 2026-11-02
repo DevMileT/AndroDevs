@@ -24,9 +24,8 @@ data class HistoryUiState(
     val isLoading: Boolean = true,
     val hasError: Boolean = false
 )
-
 /**
- * Historial con filtro (RF-10, CA-22). Se crea al entrar en la pantalla y carga todas las partidas;
+ * Historial con filtro. Se crea al entrar en la pantalla y carga todas las partidas;
  * cada cambio de filtro vuelve a pedir al repositorio solo las del resultado elegido.
  */
 class HistoryViewModel(

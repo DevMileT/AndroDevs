@@ -11,8 +11,8 @@ import java.time.LocalDate
 
 /**
  * Reloj real: lee la fecha del dispositivo. LocalDate.now() usa la zona horaria del móvil,
- * así que "día natural según la fecha local" (sección 3) se cumple sin más código.
- * LocalDate es de Java, no de Android: con minSdk 26 está disponible de forma nativa (D-07).
+ * así que "día natural según la fecha local" se cumple sin más código.
+ * LocalDate es de Java, no de Android: con minSdk 26 está disponible de forma nativa.
  */
 class SystemDateProvider : DateProvider {
     override fun today(): LocalDate = LocalDate.now()

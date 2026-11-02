@@ -36,7 +36,7 @@ import com.androdevs.luckysevens.ui.theme.BalanceBadgeBorder
 import com.androdevs.luckysevens.ui.theme.BalanceBadgeFill
 import com.androdevs.luckysevens.ui.theme.TextLight
 import com.androdevs.luckysevens.ui.util.formatNumber
-// Barra superior reutilizable (D-09): flecha ← a la izquierda y saldo a la derecha.
+// Barra superior reutilizable: flecha ← a la izquierda y saldo a la derecha.
 // No sabe de dónde viene el saldo ni adónde vuelve la flecha: los recibe por parámetro.
 @Composable
 fun BalanceTopBar(

@@ -11,8 +11,8 @@ import java.text.DateFormat
 import java.util.Date
 
 /**
- * Fecha y hora de una partida a partir de los milisegundos guardados (D-04), con el formato
- * del idioma del móvil. En la Tarea 2 cada idioma mostrará su formato sin tocar el código.
+ * Fecha y hora de una partida a partir de los milisegundos guardados, con el formato
+ * del idioma del móvil.
  */
 fun formatDateTime(millis: Long): String =
     DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(millis))

@@ -20,9 +20,8 @@ import com.androdevs.luckysevens.domain.RandomReelGenerator
 import com.androdevs.luckysevens.domain.SystemDateProvider
 
 /**
- * Punto único donde se crean el helper de SQLite y los repositorios (D-13, decisión 6): una
- * sola instancia por proceso. Crear el helper no abre la base de datos (eso ocurre en un
- * hilo de fondo la primera vez que se usa), así que `lazy` aquí es seguro.
+ * Punto único donde se crean el helper de SQLite y los repositorios: una
+ * sola instancia por proceso.
  */
 class LuckySevensApp : Application() {
 

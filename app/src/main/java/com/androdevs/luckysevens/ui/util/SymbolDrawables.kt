@@ -11,7 +11,7 @@ import androidx.annotation.DrawableRes
 import com.androdevs.luckysevens.R
 import com.androdevs.luckysevens.domain.Symbol
 
-/** Imagen de cada símbolo. El dominio solo conoce el valor; la correspondencia es de la interfaz (D-03). */
+/** Imagen de cada símbolo. El dominio solo conoce el valor; la correspondencia es de la interfaz. */
 @DrawableRes
 fun Symbol.drawableRes(): Int = when (this) {
     Symbol.CHERRY -> R.drawable.symbol_cherry

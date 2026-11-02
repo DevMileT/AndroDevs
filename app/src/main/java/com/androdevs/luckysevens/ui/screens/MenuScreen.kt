@@ -53,7 +53,6 @@ import androidx.compose.runtime.setValue
 
 
 // Separación vertical entre los botones del Menú. En el mockup eran 33 px (≈ 44 dp);
-// reducida por decisión del equipo (desviación visual, D-10).
 private val MenuButtonSpacing = 28.dp
 
 @Composable
@@ -130,7 +129,7 @@ fun MenuScreen(
     }
 }
 
-// Píldora con la moneda, el saldo y la etiqueta «Saldo actual».
+// Píldora con la moneda, el saldo y la etiqueta Saldo actual.
 @Composable
 private fun BalancePill(balance: Int) {
     Column(
@@ -207,7 +206,7 @@ private fun MenuButton(
         }
     }
 }
-// Icono de tres rayas con su desplegable de navegación (RF-02, CA-29).
+// Icono de tres rayas con su desplegable de navegación.
 // Ofrece las mismas cuatro opciones que los botones; el bonus no entra porque no es navegación.
 @Composable
 private fun NavigationDropdown(
@@ -262,7 +261,7 @@ private fun NavigationDropdown(
         }
     }
 }
-// Botón del bonus diario (RF-13): dorado y distinto de los de navegación.
+// Botón del bonus diario: dorado y distinto de los de navegación.
 // Si ya se reclamó hoy queda atenuado y desactivado.
 @Composable
 private fun BonusButton(

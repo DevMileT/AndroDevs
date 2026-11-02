@@ -53,7 +53,7 @@ import com.androdevs.luckysevens.ui.util.drawableRes
 import com.androdevs.luckysevens.ui.util.formatDateTime
 import com.androdevs.luckysevens.ui.util.formatNumber
 
-// Texto de cada opción del filtro (RF-10). El filtro en sí vive en el dominio (HistoryFilter).
+// Texto de cada opción del filtro. El filtro en sí vive en el dominio (HistoryFilter).
 private fun HistoryFilter.labelRes(): Int = when (this) {
     HistoryFilter.ALL -> R.string.history_filter_all
     HistoryFilter.WINS -> R.string.history_filter_wins

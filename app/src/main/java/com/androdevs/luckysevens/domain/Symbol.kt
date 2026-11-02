@@ -8,7 +8,7 @@ package com.androdevs.luckysevens.domain
  */
 
 
-/** Los seis símbolos de cada rodillo. El dominio solo conoce el valor; la imagen la elige la interfaz. */
+/** Los seis símbolos de cada rodillo. El dominio solo conoce el valor; la imagen la elige la interfaz.*/
 enum class Symbol {
     CHERRY,
     LEMON,

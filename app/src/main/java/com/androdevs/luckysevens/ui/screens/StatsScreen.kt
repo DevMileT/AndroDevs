@@ -118,11 +118,11 @@ fun StatsScreen(uiState: StatsUiState, onBackClick: () -> Unit) {
         }
     }
 }
-// Texto del balance neto: con «+» si es positivo (P-07).
+// Texto del balance neto: con «+» si es positivo.
 private fun netBalanceText(net: Int): String =
     if (net > 0) "+" + formatNumber(net) else formatNumber(net)
 
-// Verde si es positivo, rojo si es negativo y blanco si es cero (P-07).
+// Verde si es positivo, rojo si es negativo y blanco si es cero.
 private fun netBalanceColor(net: Int): Color = when {
     net > 0 -> StatPositive
     net < 0 -> StatNegative

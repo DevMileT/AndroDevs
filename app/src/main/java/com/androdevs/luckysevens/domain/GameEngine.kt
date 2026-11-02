@@ -8,15 +8,15 @@ package com.androdevs.luckysevens.domain
  */
 
 /**
- * Árbitro del juego: resuelve un giro con las reglas de la especificación.
+ * En el juego se resuelve un giro con las reglas de la especificación.
  * Recibe el generador de símbolos desde fuera, así las pruebas pueden darle uno con resultados
- * conocidos (RNF-06). No guarda nada ni tiene memoria: cada llamada a spin() es independiente.
+ * conocidos. No guarda nada ni tiene memoria: cada llamada a spin() es independiente.
  */
 class GameEngine(private val reelGenerator: ReelGenerator) {
 
     /**
-     * Resuelve un giro: saldo final = saldo anterior - apuesta + premio (sección 2.4).
-     * Lanza IllegalArgumentException si la apuesta no es válida (decisión 2 de D-12).
+     * Resuelve un giro: saldo final = saldo anterior - apuesta + premio.
+     * Lanza IllegalArgumentException si la apuesta no es válida.
      * No modifica el estado: devuelve el resultado, y quien lo guarde calculará el nuevo
      * PlayerState con state.withBalance(result.balanceAfter).
      */
@@ -47,7 +47,7 @@ class GameEngine(private val reelGenerator: ReelGenerator) {
 
         /**
          * Una apuesta es válida si está entre MIN_BET y MAX_BET, es un paso exacto de BET_STEP
-         * a partir del mínimo (10, 20, ..., 100) y no supera el saldo (RF-04, CA-03).
+         * a partir del mínimo (10, 20, ..., 100) y no supera el saldo.
          */
         fun isValidBet(balance: Int, bet: Int): Boolean =
             bet in GameConstants.MIN_BET..GameConstants.MAX_BET &&
@@ -56,7 +56,7 @@ class GameEngine(private val reelGenerator: ReelGenerator) {
 
         /**
          * La mayor apuesta permitida con ese saldo, o 0 si no hay ninguna (saldo menor que MIN_BET).
-         * La interfaz la usa para ajustar la apuesta cuando el saldo baja (CA-12).
+         * La interfaz la usa para ajustar la apuesta cuando el saldo baja.
          */
         fun maxBetFor(balance: Int): Int {
             if (balance < GameConstants.MIN_BET) return 0

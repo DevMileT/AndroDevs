@@ -10,7 +10,7 @@ package com.androdevs.luckysevens.domain
 import io.reactivex.rxjava3.core.Single
 
 /**
- * Contrato de consulta del historial y las estadísticas. Solo lee: nunca modifica la partida
+ * Consulta del historial y las estadísticas. Solo lee: nunca modifica la partida
  * (eso es de GameRepository). La implementación con SQLite vive en la capa de datos .
  *
  * Igual que GameRepository, la implementación ejecuta el trabajo en un hilo de fondo
@@ -26,7 +26,7 @@ interface HistoryRepository {
     fun getHistory(filter: HistoryFilter): Single<List<SpinRecord>>
 
     /**
-     * Estadísticas calculadas desde el historial . El récord se lee del jugador,
+     * Estadísticas calculadas desde el historial. El récord se lee del jugador,
      * no del historial.
      */
     fun getStats(): Single<GameStats>
