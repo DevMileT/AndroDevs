@@ -1,4 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="welcome_start_button">Commencer</string>
+    <string name="welcome_tagline">Tourne, gagne et amuse-toi !</string>
+
+    <string name="menu_play">Jouer</string>
+    <string name="menu_history">Historique</string>
+    <string name="menu_stats">Statistiques</string>
+    <string name="menu_settings">Paramètres</string>
+    <string name="menu_balance_label">Solde actuel</string>
+    <string name="menu_open_description">Ouvrir le menu de navigation</string>
+    <string name="menu_bonus_available">Bonus quotidien +50</string>
+    <string name="menu_bonus_claimed">Bonus du jour déjà récupéré</string>
+
+    <string name="topbar_back_description">Retour au menu</string>
+    <string name="topbar_balance">Solde : %1$s</string>
+
+    <string name="game_bet_label">Mise</string>
+    <string name="game_spin_button">Lancer</string>
+    <string name="game_prizes_title">Tableau des gains</string>
+    <string name="game_prize_multiplier">X %1$d</string>
+    <string name="game_prize_three_same">Trois symboles identiques</string>
+    <string name="game_prize_two_same">Deux symboles identiques</string>
+    <string name="game_prize_one_cherry">Une cerise</string>
+    <string name="game_prize_other">Autre combinaison</string>
+    <string name="game_prize_three_sevens">Trois sept</string>
+    <string name="game_prize_three_bells">Trois cloches</string>
+    <string name="history_filter_description">Filtrer les parties</string>
+    <string name="history_outcome_win">Victoire</string>
+    <string name="history_outcome_draw">Égalité</string>
+    <string name="history_outcome_loss">Défaite</string>
+    <string name="history_row_summary">Mise %1$s · Gain %2$s · Solde %3$s</string>
+
+    <string name="history_filter_all">Toutes</string>
+    <string name="history_filter_wins">Victoires</string>
+    <string name="history_filter_draws">Égalités</string>
+    <string name="history_filter_losses">Défaites</string>
+    <string name="history_empty">Aucune partie à afficher</string>
+
+    <string name="stats_total">Nombre total de parties</string>
+    <string name="stats_wins">Victoires</string>
+    <string name="stats_draws">Égalités</string>
+    <string name="stats_losses">Défaites</string>
+    <string name="stats_net_balance">Solde net</string>
+    <string name="stats_record_title">Record personnel</string>
+    <string name="stats_record_subtitle">Solde maximal atteint</string>
+    <string name="stats_record_value">%1$s pièces</string>
+    <string name="settings_about_title">À propos</string>
+    <string name="settings_about_version">Version %1$s</string>
+    <string name="settings_about_project">Projet académique de l\'équipe AndroDevs</string>
+    <string name="settings_virtual_title">Pièces virtuelles</string>
+    <string name="settings_virtual_body">Lucky Sevens utilise exclusivement des pièces virtuelles. Il n\'y a ni argent réel, ni achats, ni paris d\'argent.</string>
+    <string name="settings_bonus_title">Bonus quotidien</string>
+    <string name="settings_bonus_body">Le bonus quotidien dépend de la date de l\'appareil. Modifier manuellement la date ou le fuseau horaire peut permettre de le réclamer plusieurs fois par jour.</string>
+    <string name="game_warning_no_funds_bonus_available">Solde insuffisant. Réclame ton bonus dans le menu</string>
+    <string name="game_warning_no_funds_bonus_claimed">Tu ne peux pas jouer avant demain</string>
+
+    <string name="result_win">Tu as gagné !</string>
+    <string name="result_draw">Tu récupères ta mise !</string>
+    <string name="result_loss">Réessaie !</string>
+    <string name="result_prize_line">Gain : %1$s pièces (%2$d × mise)</string>
+    <string name="result_previous_balance">Solde précédent</string>
+    <string name="result_bet">Mise</string>
+    <string name="result_prize">Gain</string>
+    <string name="result_final_balance">Solde final</string>
+    <string name="result_continue">Continuer</string>
+
+    <string name="error_load_failed">Impossible de charger tes données</string>
+    <string name="error_spin_failed">Impossible de terminer le lancer</string>
+    <string name="error_bonus_failed">Impossible de réclamer le bonus</string>
 </resources>

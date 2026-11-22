@@ -50,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.style.TextAlign
 
 
 // Separación vertical entre los botones del Menú. En el mockup eran 33 px (≈ 44 dp);
@@ -292,7 +293,9 @@ private fun BonusButton(
                 if (canClaim) R.string.menu_bonus_available else R.string.menu_bonus_claimed
             ),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
         )
+
     }
 }
