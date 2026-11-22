@@ -30,6 +30,7 @@ import com.androdevs.luckysevens.LuckySevensApp
 import com.androdevs.luckysevens.ui.state.HistoryViewModel
 import com.androdevs.luckysevens.ui.state.ScreenViewModelFactory
 import com.androdevs.luckysevens.ui.state.StatsViewModel
+import com.androdevs.luckysevens.ui.screens.HelpScreen
 @Composable
 fun MainNavigation(viewModel: GameViewModel) {
     val navController = rememberNavController()
@@ -101,7 +102,16 @@ fun MainNavigation(viewModel: GameViewModel) {
             val statsViewModel: StatsViewModel = viewModel(factory = screenViewModelFactory)
             StatsScreen(uiState = statsViewModel.uiState, onBackClick = goBackToMenu)
         }
-        composable(Routes.SETTINGS) { SettingsScreen(onBackClick = goBackToMenu) }
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                onBackClick = goBackToMenu,
+                onHelpClick = { navController.navigate(Routes.HELP) }
+            )
+        }
+        composable(Routes.HELP) {
+            // Vuelve solo un paso (a Ajustes), a diferencia de goBackToMenu, que saltaría al Menú.
+            HelpScreen(onBackClick = { navController.popBackStack() })
+        }
     }
 }
 

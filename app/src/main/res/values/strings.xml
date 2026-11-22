@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Lucky Sevens</string>
+    <string name="app_name" translatable="false">Lucky Sevens</string>
 
     <string name="welcome_start_button">Comenzar</string>
 
@@ -70,5 +70,6 @@
     <string name="error_load_failed">No se pudieron cargar tus datos</string>
     <string name="error_spin_failed">No se pudo completar el giro</string>
     <string name="error_bonus_failed">No se pudo reclamar el bonus</string>
+    <string name="settings_help_title">Ayuda</string>
 
 </resources>

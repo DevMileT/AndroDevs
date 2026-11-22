@@ -27,9 +27,13 @@ import com.androdevs.luckysevens.ui.theme.ButtonAmber
 import com.androdevs.luckysevens.ui.theme.HistoryCardBorder
 import com.androdevs.luckysevens.ui.theme.HistoryCardFill
 import com.androdevs.luckysevens.ui.theme.TextLight
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 
 @Composable
-fun SettingsScreen(onBackClick: () -> Unit) {
+fun SettingsScreen(onBackClick: () -> Unit, onHelpClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
         TitleTopBar(title = stringResource(R.string.menu_settings), onBackClick = onBackClick)
         Column(
@@ -55,7 +59,12 @@ fun SettingsScreen(onBackClick: () -> Unit) {
                 title = stringResource(R.string.settings_bonus_title),
                 lines = listOf(stringResource(R.string.settings_bonus_body))
             )
+            HelpRow(
+                title = stringResource(R.string.settings_help_title),
+                onClick = onHelpClick
+            )
         }
+
     }
 }
 
@@ -91,5 +100,32 @@ private fun InfoCard(title: String, lines: List<String>, modifier: Modifier = Mo
             )
             Spacer(modifier = Modifier.height(4.dp))
         }
+    }
+}
+// Fila pulsable que lleva a la Ayuda. Mismo aspecto que InfoCard, con un símbolo › a la derecha.
+@Composable
+private fun HelpRow(title: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .background(HistoryCardFill, RoundedCornerShape(16.dp))
+            .border(2.dp, HistoryCardBorder, RoundedCornerShape(16.dp))
+            .padding(horizontal = 18.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = ButtonAmber
+        )
+        Text(
+            text = "›",
+            style = MaterialTheme.typography.titleLarge,
+            color = ButtonAmber
+        )
     }
 }

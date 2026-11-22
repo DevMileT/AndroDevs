@@ -69,4 +69,5 @@
     <string name="error_load_failed">Your data could not be loaded</string>
     <string name="error_spin_failed">The spin could not be completed</string>
     <string name="error_bonus_failed">The bonus could not be claimed</string>
+    <string name="settings_help_title">Help</string>
 </resources>
