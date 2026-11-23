@@ -26,14 +26,16 @@ import com.androdevs.luckysevens.ui.components.TitleTopBar
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 
-// Dirección virtual de la ayuda: el dominio es ficticio y no sale a internet.
-private const val HELP_URL = "https://appassets.androidplatform.net/assets/help/es/index.html"
 // Color de la barra de desplazamiento: el color del texto de la ayuda (#F2E9D8) con algo de transparencia.
 private val SCROLLBAR_COLOR = 0xCCF2E9D8.toInt()
 
 @Composable
 fun HelpScreen(onBackClick: () -> Unit) {
     val context = LocalContext.current
+    // Carpeta de la ayuda según el idioma de la app: "es", "en" o "fr" (ver help_folder en strings.xml).
+    val helpFolder = stringResource(R.string.help_folder)
+    // Dirección virtual de la ayuda: el dominio es ficticio y no sale a internet.
+    val helpUrl = "https://appassets.androidplatform.net/assets/help/$helpFolder/index.html"
     // traduce /assets/... a la carpeta assets de la app. Se crea una sola vez.
     val assetLoader = remember {
         WebViewAssetLoader.Builder()
@@ -62,7 +64,7 @@ fun HelpScreen(onBackClick: () -> Unit) {
                         }
                     }
                     webViewClient = LocalContentWebViewClient(assetLoader)
-                    loadUrl(HELP_URL)
+                    loadUrl(helpUrl)
                 }
             }
         )

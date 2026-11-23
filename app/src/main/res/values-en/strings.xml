@@ -70,4 +70,5 @@
     <string name="error_spin_failed">The spin could not be completed</string>
     <string name="error_bonus_failed">The bonus could not be claimed</string>
     <string name="settings_help_title">Help</string>
+    <string name="help_folder">en</string>
 </resources>

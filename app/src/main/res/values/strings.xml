@@ -71,5 +71,6 @@
     <string name="error_spin_failed">No se pudo completar el giro</string>
     <string name="error_bonus_failed">No se pudo reclamar el bonus</string>
     <string name="settings_help_title">Ayuda</string>
+    <string name="help_folder" translatable="false">es</string>
 
 </resources>
