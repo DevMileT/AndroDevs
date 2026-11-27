@@ -13,6 +13,7 @@ import com.androdevs.luckysevens.ui.navigation.MainNavigation
 import com.androdevs.luckysevens.ui.state.GameViewModel
 import com.androdevs.luckysevens.ui.state.GameViewModelFactory
 import com.androdevs.luckysevens.ui.theme.LuckySevensTheme
+import com.androdevs.luckysevens.audio.AudioConnection
 
 class MainActivity : ComponentActivity() {
 
@@ -20,6 +21,8 @@ class MainActivity : ComponentActivity() {
     private val gameViewModel: GameViewModel by viewModels {
         GameViewModelFactory(application as LuckySevensApp)
     }
+    // Enlace con el servicio de audio. "lazy": se crea al usarlo, cuando ya existe el contexto.
+    private val audioConnection by lazy { AudioConnection(applicationContext) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,5 +44,21 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         gameViewModel.refreshState()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        audioConnection.start()
+    }
+
+    override fun onStop() {
+        audioConnection.stop()
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        // isFinishing: true si el jugador cierra la app; false si Android solo recrea la Activity.
+        if (isFinishing) audioConnection.stopService()
+        super.onDestroy()
     }
 }
