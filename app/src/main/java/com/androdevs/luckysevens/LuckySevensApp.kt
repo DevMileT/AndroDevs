@@ -18,6 +18,7 @@ import com.androdevs.luckysevens.domain.GameRepository
 import com.androdevs.luckysevens.domain.HistoryRepository
 import com.androdevs.luckysevens.domain.RandomReelGenerator
 import com.androdevs.luckysevens.domain.SystemDateProvider
+import com.androdevs.luckysevens.data.AppPreferences
 
 /**
  * Punto único donde se crean el helper de SQLite y los repositorios: una
@@ -33,4 +34,5 @@ class LuckySevensApp : Application() {
     }
     val historyRepository: HistoryRepository by lazy { HistoryRepositoryImpl(helper) }
     val bonusRules: BonusRules by lazy { BonusRules(dateProvider) }
+    val appPreferences: AppPreferences by lazy { AppPreferences(this) }
 }

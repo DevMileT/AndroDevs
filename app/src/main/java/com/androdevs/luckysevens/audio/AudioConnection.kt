@@ -49,6 +49,10 @@ class AudioConnection(private val context: Context) {
         }
         service = null
     }
+    /** Avisa al servicio de que ha cambiado un ajuste. Si no hay servicio, no hace nada. */
+    fun refreshSettings() {
+        service?.refreshSettings()
+    }
 
     /** Se llama solo cuando el jugador sale de la app de verdad. */
     fun stopService() {

@@ -31,9 +31,21 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.ui.semantics.Role
+import com.androdevs.luckysevens.ui.state.SettingsUiState
 
 @Composable
-fun SettingsScreen(onBackClick: () -> Unit, onHelpClick: () -> Unit) {
+fun SettingsScreen(
+    uiState: SettingsUiState,
+    onMusicChange: (Boolean) -> Unit,
+    onBackClick: () -> Unit,
+    onHelpClick: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
         TitleTopBar(title = stringResource(R.string.menu_settings), onBackClick = onBackClick)
         Column(
@@ -43,6 +55,13 @@ fun SettingsScreen(onBackClick: () -> Unit, onHelpClick: () -> Unit) {
                 .padding(horizontal = 18.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            SettingsCard(title = stringResource(R.string.settings_sound_title)) {
+                SwitchRow(
+                    label = stringResource(R.string.settings_music_switch),
+                    checked = uiState.musicEnabled,
+                    onCheckedChange = onMusicChange
+                )
+            }
             InfoCard(
                 title = stringResource(R.string.settings_about_title),
                 lines = listOf(
@@ -126,6 +145,61 @@ private fun HelpRow(title: String, onClick: () -> Unit, modifier: Modifier = Mod
             text = "›",
             style = MaterialTheme.typography.titleLarge,
             color = ButtonAmber
+        )
+    }
+}
+// Tarjeta con el mismo aspecto que InfoCard, pero que acepta cualquier contenido (D-17).
+@Composable
+private fun SettingsCard(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(HistoryCardFill, RoundedCornerShape(16.dp))
+            .border(2.dp, HistoryCardBorder, RoundedCornerShape(16.dp))
+            .padding(horizontal = 18.dp, vertical = 14.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = ButtonAmber
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        content()
+    }
+}
+
+// Fila con un texto y un interruptor. Toda la fila es pulsable, no solo el interruptor.
+@Composable
+private fun SwitchRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextLight
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = null,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = HistoryCardFill,
+                checkedTrackColor = ButtonAmber,
+                checkedBorderColor = ButtonAmber,
+                uncheckedThumbColor = TextLight,
+                uncheckedTrackColor = HistoryCardFill,
+                uncheckedBorderColor = TextLight
+            )
         )
     }
 }

@@ -72,5 +72,7 @@
     <string name="error_bonus_failed">No se pudo reclamar el bonus</string>
     <string name="settings_help_title">Ayuda</string>
     <string name="help_folder" translatable="false">es</string>
+    <string name="settings_sound_title">Sonido</string>
+    <string name="settings_music_switch">Música de fondo</string>
 
 </resources>

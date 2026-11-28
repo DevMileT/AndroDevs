@@ -70,4 +70,6 @@
     <string name="error_bonus_failed">Impossible de réclamer le bonus</string>
     <string name="settings_help_title">Aide</string>
     <string name="help_folder">fr</string>
+    <string name="settings_sound_title">Son</string>
+    <string name="settings_music_switch">Musique de fond</string>
 </resources>

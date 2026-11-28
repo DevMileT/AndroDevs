@@ -71,4 +71,6 @@
     <string name="error_bonus_failed">The bonus could not be claimed</string>
     <string name="settings_help_title">Help</string>
     <string name="help_folder">en</string>
+    <string name="settings_sound_title">Sound</string>
+    <string name="settings_music_switch">Background music</string>
 </resources>

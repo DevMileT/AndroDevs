@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainNavigation(viewModel = gameViewModel)
+                    MainNavigation(viewModel = gameViewModel, audioConnection = audioConnection)
                 }
             }
         }

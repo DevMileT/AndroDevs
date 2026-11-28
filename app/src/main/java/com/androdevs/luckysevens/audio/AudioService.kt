@@ -13,6 +13,8 @@ import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
 import com.androdevs.luckysevens.R
+import com.androdevs.luckysevens.LuckySevensApp
+import com.androdevs.luckysevens.data.AppPreferences
 
 /**
  * Servicio de audio de la app: iniciado y enlazado.
@@ -34,6 +36,10 @@ class AudioService : Service() {
     private var isPrepared = false   // ¿ya terminó de cargar el MediaPlayer?
     private var wantsToPlay = false  // ¿debe sonar en cuanto esté listo?
 
+    // Ajustes del jugador: los pide a la Application, que es su único dueño.
+    private val preferences: AppPreferences
+        get() = (application as LuckySevensApp).appPreferences
+
     override fun onBind(intent: Intent): IBinder = binder
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -41,18 +47,34 @@ class AudioService : Service() {
         return START_NOT_STICKY
     }
 
+    /** La app está a la vista: la música suena si el jugador la tiene activada. */
     fun playMusic() {
         wantsToPlay = true
-        val p = player ?: createPlayer()
-        if (isPrepared && !p.isPlaying) p.start()
+        updatePlayback()
     }
 
+    /** La app ya no está a la vista: se pausa la música. */
     fun pauseMusic() {
         wantsToPlay = false
-        val p = player
-        if (isPrepared && p != null && p.isPlaying) p.pause()
+        updatePlayback()
     }
 
+    /** Se llama cuando cambia un ajuste (por ejemplo, el interruptor de música). */
+    fun refreshSettings() {
+        updatePlayback()
+    }
+
+    // Único sitio que decide si suena o no: app a la vista Y música activada.
+    private fun updatePlayback() {
+        val shouldPlay = wantsToPlay && preferences.musicEnabled
+        if (shouldPlay) {
+            val p = player ?: createPlayer()
+            if (isPrepared && !p.isPlaying) p.start()
+        } else {
+            val p = player
+            if (isPrepared && p != null && p.isPlaying) p.pause()
+        }
+    }
     private fun createPlayer(): MediaPlayer {
         val p = MediaPlayer()
         p.setAudioAttributes(
@@ -68,7 +90,7 @@ class AudioService : Service() {
         p.setVolume(MUSIC_VOLUME, MUSIC_VOLUME)
         p.setOnPreparedListener {
             isPrepared = true
-            if (wantsToPlay) it.start()
+            updatePlayback()
         }
         p.prepareAsync()
         player = p

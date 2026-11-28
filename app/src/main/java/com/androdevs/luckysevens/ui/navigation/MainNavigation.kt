@@ -31,8 +31,10 @@ import com.androdevs.luckysevens.ui.state.HistoryViewModel
 import com.androdevs.luckysevens.ui.state.ScreenViewModelFactory
 import com.androdevs.luckysevens.ui.state.StatsViewModel
 import com.androdevs.luckysevens.ui.screens.HelpScreen
+import com.androdevs.luckysevens.audio.AudioConnection
+import com.androdevs.luckysevens.ui.state.SettingsViewModel
 @Composable
-fun MainNavigation(viewModel: GameViewModel) {
+fun MainNavigation(viewModel: GameViewModel, audioConnection: AudioConnection) {
     val navController = rememberNavController()
     // El saldo y el bonus vienen del GameViewModel (SQLite) y se pasan a las pantallas que los
     // muestran: Menú y Juego. Si el estado cambia, estas pantallas se repintan.
@@ -103,7 +105,14 @@ fun MainNavigation(viewModel: GameViewModel) {
             StatsScreen(uiState = statsViewModel.uiState, onBackClick = goBackToMenu)
         }
         composable(Routes.SETTINGS) {
+            val settingsViewModel: SettingsViewModel = viewModel(factory = screenViewModelFactory)
             SettingsScreen(
+                uiState = settingsViewModel.uiState,
+                onMusicChange = { enabled ->
+                    // Primero se guarda el ajuste y después se avisa al servicio (opción A).
+                    settingsViewModel.onMusicChange(enabled)
+                    audioConnection.refreshSettings()
+                },
                 onBackClick = goBackToMenu,
                 onHelpClick = { navController.navigate(Routes.HELP) }
             )

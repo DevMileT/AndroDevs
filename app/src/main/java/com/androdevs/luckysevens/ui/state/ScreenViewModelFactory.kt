@@ -21,6 +21,8 @@ class ScreenViewModelFactory(private val app: LuckySevensApp) : ViewModelProvide
                 HistoryViewModel(app.historyRepository) as T
             modelClass.isAssignableFrom(StatsViewModel::class.java) ->
                 StatsViewModel(app.historyRepository) as T
+            modelClass.isAssignableFrom(SettingsViewModel::class.java) ->
+                SettingsViewModel(app.appPreferences) as T
             else -> throw IllegalArgumentException("ViewModel desconocido: $modelClass")
         }
 }
